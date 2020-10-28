@@ -1,0 +1,14 @@
+{
+  "editor.formatOnSave": true,
+  "cSpell.words": [
+    "ESNEXT",
+    "allowlist",
+    "cobertura",
+    "devtool",
+    "downlevel",
+    "lcov",
+    "sourcemap",
+    "tslib",
+    "typechecking"
+  ]
+}
