@@ -3,6 +3,7 @@ import {
   ApolloServerTestClient,
   createTestClient,
 } from 'apollo-server-testing';
+import { DIRECTIVES } from '@graphql-codegen/typescript-mongodb';
 
 import resolvers from './resolvers';
 import typeDefs from './type-defs';
@@ -19,14 +20,10 @@ const setupClient = (config: Config): ApolloServerTestClient => {
   return createTestClient(testApolloServer);
 };
 
-const setupTestClient = (): ApolloServerTestClient => {
-  return setupClient({ typeDefs, resolvers });
-};
-
 const setupMockClient = (): ApolloServerTestClient => {
   return setupClient({
+    typeDefs: [DIRECTIVES, typeDefs],
     resolvers,
-    typeDefs,
     mocks,
     mockEntireSchema: true,
   });
@@ -37,30 +34,6 @@ const normalizeGraphqlData = <T>(data: T): T => {
 };
 
 describe('main', (): void => {
-  describe('query: testMessage', (): void => {
-    const query = gql`
-      query testMessage {
-        testMessage
-      }
-    `;
-    it(`should return test message 'Hello World!'`, async (): Promise<void> => {
-      expect.hasAssertions();
-      const testClient = setupTestClient();
-      const { data } = await testClient.query({ query });
-      expect(normalizeGraphqlData(data)).toStrictEqual({
-        testMessage: 'Hello World!',
-      });
-    });
-    it('should mock message', async (): Promise<void> => {
-      expect.hasAssertions();
-      const mockClient = setupMockClient();
-      const { data } = await mockClient.query({ query });
-      expect(normalizeGraphqlData(data)).toStrictEqual({
-        testMessage: MOCK_GRAPHQL_STRING,
-      });
-    });
-  });
-
   describe('query: getPost', () => {
     const query = gql`
       query getPost($id: ID!) {
@@ -136,7 +109,9 @@ describe('main', (): void => {
   describe('mutation: likePost', () => {
     const mutation = gql`
       mutation likePost($postId: ID!) {
-        likePost(postId: $postId)
+        likePost(postId: $postId) {
+          likeCount
+        }
       }
     `;
     it('should mock likePost amount', async (): Promise<void> => {
@@ -147,7 +122,9 @@ describe('main', (): void => {
         variables: { postId: 1 },
       });
       expect(normalizeGraphqlData(data)).toStrictEqual({
-        likePost: MOCK_GRAPHQL_UNSIGNED_INT,
+        likePost: {
+          likeCount: MOCK_GRAPHQL_UNSIGNED_INT,
+        },
       });
     });
   });
@@ -155,7 +132,9 @@ describe('main', (): void => {
   describe('mutation: followUser', () => {
     const mutation = gql`
       mutation followUser($userId: ID!) {
-        followUser(userId: $userId)
+        followUser(userId: $userId) {
+          followingCount
+        }
       }
     `;
     it('should mock follower count after follow user', async (): Promise<
@@ -168,7 +147,9 @@ describe('main', (): void => {
         variables: { userId: 1 },
       });
       expect(normalizeGraphqlData(data)).toStrictEqual({
-        followUser: MOCK_GRAPHQL_UNSIGNED_INT,
+        followUser: {
+          followingCount: MOCK_GRAPHQL_UNSIGNED_INT,
+        },
       });
     });
   });
@@ -176,7 +157,9 @@ describe('main', (): void => {
   describe('mutation: unFollowUser', () => {
     const mutation = gql`
       mutation unFollowUser($userId: ID!) {
-        unFollowUser(userId: $userId)
+        unFollowUser(userId: $userId) {
+          followingCount
+        }
       }
     `;
     it('should mock follower count after unFollow user', async (): Promise<
@@ -189,7 +172,9 @@ describe('main', (): void => {
         variables: { userId: 1 },
       });
       expect(normalizeGraphqlData(data)).toStrictEqual({
-        unFollowUser: MOCK_GRAPHQL_UNSIGNED_INT,
+        unFollowUser: {
+          followingCount: MOCK_GRAPHQL_UNSIGNED_INT,
+        },
       });
     });
   });

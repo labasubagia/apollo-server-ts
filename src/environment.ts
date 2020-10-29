@@ -2,12 +2,14 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const defaultPort = 4000;
-
 interface Environment {
   apollo: {
     introspection: boolean;
     playground: boolean;
+  };
+  mongodb: {
+    url: string;
+    dbName: string;
   };
   port: string | number;
 }
@@ -17,7 +19,11 @@ const environment: Environment = {
     introspection: process.env.APOLLO_INTROSPECTION === 'true',
     playground: process.env.APOLLO_PLAYGROUND === 'true',
   },
-  port: process.env.PORT || defaultPort,
+  mongodb: {
+    url: process.env.MONGODB_URL as string,
+    dbName: process.env.MONGODB_DB_NAME as string,
+  },
+  port: process.env.PORT || 4000,
 };
 
 export default environment;

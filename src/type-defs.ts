@@ -5,28 +5,33 @@ export default gql`
   scalar EmailAddress
   scalar UnsignedInt
 
-  type User {
-    id: ID!
-    firstName: String!
-    lastName: String!
-    email: EmailAddress
-    posts: [Post!]!
-    following: [User!]!
-    followers: [User!]!
+  type User @entity {
+    id: ID! @id
+    firstName: String! @column
+    lastName: String! @column
+    email: EmailAddress @column(overrideType: "string")
+    posts: [Post!]
+    postCount: UnsignedInt!
+    following: [User!] @link
+    followingCount: UnsignedInt!
+    followers: [User!]
+    followerCount: UnsignedInt!
   }
 
-  type Post {
-    id: ID!
-    title: String!
-    content: String!
-    author: User!
-    publishedAt: DateTime!
-    likedBy: [User!]!
+  type Post @entity {
+    id: ID! @id
+    title: String! @column
+    content: String! @column
+    author: User! @link
+    publishedAt: DateTime! @column(overrideType: "Date")
+    likedBy: [User!] @link
+    likeCount: UnsignedInt!
   }
 
   type Query {
-    testMessage: String!
+    getPosts(first: Int!, page: Int = 1): [Post!]!
     getPost(id: ID!): Post
+    getUser(id: ID!): User
   }
 
   input PublishPostInput {
@@ -35,9 +40,9 @@ export default gql`
   }
 
   type Mutation {
-    publishPost(input: PublishPostInput!): Post!
-    followUser(userId: ID!): UnsignedInt!
-    unFollowUser(userId: ID!): UnsignedInt!
-    likePost(postId: ID!): UnsignedInt!
+    publishPost(input: PublishPostInput!): Post
+    followUser(userId: ID!): User
+    unFollowUser(userId: ID!): User
+    likePost(postId: ID!): Post
   }
 `;

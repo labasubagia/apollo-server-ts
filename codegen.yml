@@ -1,0 +1,6 @@
+schema: ./src/type-defs.ts
+generates:
+  ./src/codegen.d.ts:
+    plugins:
+      - typescript
+      - typescript-mongodb

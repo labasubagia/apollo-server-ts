@@ -4,11 +4,15 @@
     "ESNEXT",
     "allowlist",
     "cobertura",
+    "codegen",
     "devtool",
     "downlevel",
     "lcov",
+    "mongodb",
+    "prebuild",
     "sourcemap",
     "tslib",
-    "typechecking"
+    "typechecking",
+    "unfollow"
   ]
 }
