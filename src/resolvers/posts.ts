@@ -29,7 +29,7 @@ const postsResolver = (provider: MongoDbProvider) => ({
       { input: { title, content } }: MutationPublishPostArgs
     ): Promise<PostDbObject | null> => {
       try {
-        const payload: PostDbObject | { publishedAt: string } = {
+        const payload: PostDbObject = {
           title,
           content,
           author: new ObjectID(MOCK_MONGO_USER_ID),

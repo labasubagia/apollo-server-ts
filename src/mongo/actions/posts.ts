@@ -32,9 +32,7 @@ export default class PostAction {
     return result as PostDbObject;
   }
 
-  async insertPost(
-    payload: PostDbObject | { publishedAt: string }
-  ): Promise<PostDbObject | null> {
+  async insertPost(payload: PostDbObject): Promise<PostDbObject | null> {
     const author = await this.provider.usersCollection.find({
       _id: { ...payload }.author,
     });
