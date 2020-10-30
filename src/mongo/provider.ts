@@ -1,15 +1,19 @@
-import { Collection, Db, MongoClient, ObjectID } from 'mongodb';
-import { UserDbObject } from '../codegen';
-import { MOCK_MONGO_USER_ID } from '../const/mocks';
+import { Collection, Db, MongoClient } from 'mongodb';
+import { mongoUri, mongoDBName } from '../../globalConfig.json';
 import environment from '../environment';
+import PostAction from './actions/posts';
+import UserAction from './actions/users';
 
 export class MongoDbProvider {
   private database?: Db;
 
+  private databaseName: string;
+
   private mongoClient: MongoClient;
 
-  constructor(url: string) {
+  constructor(url: string, databaseName: string) {
     this.mongoClient = new MongoClient(url, { useUnifiedTopology: true });
+    this.databaseName = databaseName;
   }
 
   get postsCollection(): Collection {
@@ -18,47 +22,43 @@ export class MongoDbProvider {
     return collection;
   }
 
+  get postsAction(): PostAction {
+    return new PostAction(this as MongoDbProvider);
+  }
+
   get usersCollection(): Collection {
     const collection = this.getCollection('users');
     if (!collection) throw new Error('Users collection is undefined');
     return collection;
   }
 
-  async connectAsync(databaseName: string): Promise<void> {
+  get usersAction(): UserAction {
+    return new UserAction(this as MongoDbProvider);
+  }
+
+  async connectAsync(): Promise<void> {
     await this.mongoClient.connect();
-    this.database = this.mongoClient.db(databaseName);
+    this.database = this.mongoClient.db(this.databaseName);
   }
 
   async closeAsync(): Promise<void> {
     this.mongoClient.close();
   }
 
-  private getCollection(collectionName: string): Collection {
+  async removeAllData(): Promise<void> {
+    await this.postsCollection.deleteMany({});
+    await this.usersCollection.deleteMany({});
+  }
+
+  private getCollection<T>(collectionName: string): Collection {
     if (!this.database) throw new Error('Database is undefined');
-    return this.database.collection(collectionName);
+    return this.database.collection<T>(collectionName);
   }
 }
 
-export const mongoDbProvider = new MongoDbProvider(environment.mongodb.url);
+export const mongoDbProvider = new MongoDbProvider(
+  environment.mongodb.url,
+  environment.mongodb.dbName
+);
 
-export const addMockUserAsync = async (): Promise<void> => {
-  const count = await mongoDbProvider.usersCollection.countDocuments();
-  if (count === 0) {
-    const users: UserDbObject[] = [
-      {
-        _id: new ObjectID(MOCK_MONGO_USER_ID),
-        firstName: 'Wayne',
-        lastName: 'Rooney',
-        email: 'wayne@mail.com',
-      },
-      {
-        _id: new ObjectID('fedcba987654321098765432'),
-        firstName: 'Christian',
-        lastName: 'Fate',
-        email: 'chris.fate@mail.com',
-        following: [new ObjectID(MOCK_MONGO_USER_ID)],
-      },
-    ];
-    await mongoDbProvider.usersCollection.insertMany(users);
-  }
-};
+export const mongoDbMockProvider = new MongoDbProvider(mongoUri, mongoDBName);

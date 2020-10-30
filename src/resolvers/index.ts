@@ -3,26 +3,34 @@ import {
   EmailAddressResolver,
   UnsignedIntResolver,
 } from 'graphql-scalars';
-import postResolver from './posts';
-import userResolver from './users';
+import { MongoDbProvider } from '../mongo/provider';
+import postsResolver from './posts';
+import usersResolver from './users';
 
-export default {
-  // Custom Scalar
-  DateTime: DateTimeResolver,
-  EmailAddress: EmailAddressResolver,
-  UnsignedInt: UnsignedIntResolver,
+const resolver = (provider: MongoDbProvider) => {
+  const postResolver = postsResolver(provider);
+  const userResolver = usersResolver(provider);
 
-  // Type
-  Post: postResolver.Post,
-  User: userResolver.User,
+  return {
+    // Custom Scalar
+    DateTime: DateTimeResolver,
+    EmailAddress: EmailAddressResolver,
+    UnsignedInt: UnsignedIntResolver,
 
-  Query: {
-    ...postResolver.Query,
-    ...userResolver.Query,
-  },
+    // Type
+    Post: postResolver.Post,
+    User: userResolver.User,
 
-  Mutation: {
-    ...postResolver.Mutation,
-    ...userResolver.Mutation,
-  },
+    Query: {
+      ...postResolver.Query,
+      ...userResolver.Query,
+    },
+
+    Mutation: {
+      ...postResolver.Mutation,
+      ...userResolver.Mutation,
+    },
+  };
 };
+
+export default resolver;

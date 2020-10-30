@@ -7,26 +7,20 @@ import {
   QueryGetPostArgs,
   QueryGetPostsArgs,
 } from '../codegen';
-import {
-  findAuthor,
-  findLikeUsers,
-  getAllPostPaginate,
-  getSinglePost,
-  insertPost,
-  likePost,
-} from '../mongo/actions/posts';
+import { MongoDbProvider } from '../mongo/provider';
 
-export default {
+const postsResolver = (provider: MongoDbProvider) => ({
   Query: {
     getPosts: async (
       _: unknown,
       { first, page }: QueryGetPostsArgs
-    ): Promise<PostDbObject[]> => getAllPostPaginate({ first, page }),
+    ): Promise<PostDbObject[]> =>
+      provider.postsAction.getAllPostPaginate({ first, page }),
 
     getPost: async (
       _: unknown,
       { id }: QueryGetPostArgs
-    ): Promise<PostDbObject | null> => getSinglePost(id),
+    ): Promise<PostDbObject | null> => provider.postsAction.getSinglePost(id),
   },
 
   Mutation: {
@@ -35,7 +29,13 @@ export default {
       { input: { title, content } }: MutationPublishPostArgs
     ): Promise<PostDbObject | null> => {
       try {
-        return insertPost(MOCK_MONGO_USER_ID, { title, content });
+        const payload: PostDbObject | { publishedAt: string } = {
+          title,
+          content,
+          author: new ObjectID(MOCK_MONGO_USER_ID),
+          publishedAt: new Date().toISOString(),
+        };
+        return provider.postsAction.insertPost(payload);
       } catch (error) {
         console.error({ error });
         return null;
@@ -47,7 +47,7 @@ export default {
       { postId }: MutationLikePostArgs
     ): Promise<PostDbObject | null> => {
       try {
-        return likePost({ postId });
+        return provider.postsAction.likePost({ postId });
       } catch (error) {
         console.error({ error });
         return null;
@@ -57,8 +57,11 @@ export default {
 
   Post: {
     id: (obj: PostDbObject): ObjectID => obj._id,
-    author: async (obj: PostDbObject) => findAuthor(obj),
-    likedBy: async (obj: PostDbObject) => findLikeUsers(obj),
+    author: async (obj: PostDbObject) => provider.postsAction.findAuthor(obj),
+    likedBy: async (obj: PostDbObject) =>
+      provider.postsAction.findLikeUsers(obj),
     likeCount: (obj: PostDbObject): number => obj.likedBy?.length || 0,
   },
-};
+});
+
+export default postsResolver;

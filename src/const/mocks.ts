@@ -10,3 +10,4 @@ export const MOCK_GRAPHQL_EMAIL = 'labasubagia22@gmail.com';
 
 // Mongo
 export const MOCK_MONGO_USER_ID = '0123456789abcdef01234567';
+export const MOCK_MONGO_POST_ID = '0123456789abcdef01234568';

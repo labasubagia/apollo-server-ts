@@ -1,95 +1,95 @@
 import { ObjectID } from 'mongodb';
 import { PostDbObject, UserDbObject } from '../../codegen';
-import { mongoDbProvider } from '../provider';
+import { MongoDbProvider } from '../provider';
 
-export const getSingleUser = async ({
-  userId,
-}: {
-  userId: string;
-}): Promise<UserDbObject> => {
-  const objId = new ObjectID(userId);
-  const result = await mongoDbProvider.usersCollection.findOne({
-    _id: objId,
-  });
-  return result as UserDbObject;
-};
+export default class UserAction {
+  private provider: MongoDbProvider;
 
-export const followUser = async ({
-  followerId,
-  followingId,
-}: {
-  followerId: string;
-  followingId: string;
-}): Promise<UserDbObject | null> => {
-  const followerObjId = new ObjectID(followerId);
-  const followingObjId = new ObjectID(followingId);
+  constructor(provider: MongoDbProvider) {
+    if (!provider) throw new Error('Provider is undefined');
+    this.provider = provider;
+  }
 
-  const followerUser = (await mongoDbProvider.usersCollection.findOne({
-    _id: followerObjId,
-  })) as UserDbObject;
+  async getSingleUser({ userId }: { userId: string }): Promise<UserDbObject> {
+    const objId = new ObjectID(userId);
+    const result = await this.provider.usersCollection.findOne({
+      _id: objId,
+    });
+    return result as UserDbObject;
+  }
 
-  const following: ObjectID[] = [
-    ...(followerUser.following || []).filter(
-      (item) => !item.equals(followerObjId) && !item.equals(followingObjId)
-    ),
-    followingObjId,
-  ];
+  async followUser({
+    followerId,
+    followingId,
+  }: {
+    followerId: string;
+    followingId: string;
+  }): Promise<UserDbObject | null> {
+    const followerObjId = new ObjectID(followerId);
+    const followingObjId = new ObjectID(followingId);
 
-  const result = await mongoDbProvider.usersCollection.findOneAndUpdate(
-    { _id: followerObjId },
-    { $set: { following } },
-    { returnOriginal: false }
-  );
-  return result.value as UserDbObject;
-};
+    const followerUser = (await this.provider.usersCollection.findOne({
+      _id: followerObjId,
+    })) as UserDbObject;
 
-export const unFollowUser = async ({
-  followerId,
-  followingId,
-}: {
-  followerId: string;
-  followingId: string;
-}): Promise<UserDbObject | null> => {
-  const followerObjId = new ObjectID(followerId);
-  const followingObjId = new ObjectID(followingId);
+    const following: ObjectID[] = [
+      ...(followerUser.following || []).filter(
+        (item) => !item.equals(followerObjId) && !item.equals(followingObjId)
+      ),
+      followingObjId,
+    ];
 
-  const followerUser = (await mongoDbProvider.usersCollection.findOne({
-    _id: followerObjId,
-  })) as UserDbObject;
+    const result = await this.provider.usersCollection.findOneAndUpdate(
+      { _id: followerObjId },
+      { $set: { following } },
+      { returnOriginal: false }
+    );
+    return result.value as UserDbObject;
+  }
 
-  const following: ObjectID[] = [...(followerUser.following || [])].filter(
-    (item) =>
-      !item.equals(followerObjId) && !item.equals(new ObjectID(followingObjId))
-  );
+  async unFollowUser({
+    followerId,
+    followingId,
+  }: {
+    followerId: string;
+    followingId: string;
+  }): Promise<UserDbObject | null> {
+    const followerObjId = new ObjectID(followerId);
+    const followingObjId = new ObjectID(followingId);
 
-  const result = await mongoDbProvider.usersCollection.findOneAndUpdate(
-    { _id: followerObjId },
-    { $set: { following } },
-    { returnOriginal: false }
-  );
-  return result.value as UserDbObject;
-};
+    const followerUser = (await this.provider.usersCollection.findOne({
+      _id: followerObjId,
+    })) as UserDbObject;
 
-export const getUserPosts = async (
-  user: UserDbObject
-): Promise<PostDbObject[]> => {
-  return mongoDbProvider.postsCollection
-    .find({ author: user._id })
-    .toArray() as Promise<PostDbObject[]>;
-};
+    const following: ObjectID[] = [...(followerUser.following || [])].filter(
+      (item) =>
+        !item.equals(followerObjId) &&
+        !item.equals(new ObjectID(followingObjId))
+    );
 
-export const getUserFollowing = async (
-  user: UserDbObject
-): Promise<UserDbObject[]> => {
-  return mongoDbProvider.usersCollection
-    .find({ _id: { $in: user.following || [] } })
-    .toArray() as Promise<UserDbObject[]>;
-};
+    const result = await this.provider.usersCollection.findOneAndUpdate(
+      { _id: followerObjId },
+      { $set: { following } },
+      { returnOriginal: false }
+    );
+    return result.value as UserDbObject;
+  }
 
-export const getUserFollowers = async (
-  user: UserDbObject
-): Promise<UserDbObject[]> => {
-  return mongoDbProvider.usersCollection
-    .find({ following: { $elemMatch: { $eq: user._id } } })
-    .toArray() as Promise<UserDbObject[]>;
-};
+  async getUserPosts(user: UserDbObject): Promise<PostDbObject[]> {
+    return this.provider.postsCollection
+      .find({ author: user._id })
+      .toArray() as Promise<PostDbObject[]>;
+  }
+
+  async getUserFollowing(user: UserDbObject): Promise<UserDbObject[]> {
+    return this.provider.usersCollection
+      .find({ _id: { $in: user.following || [] } })
+      .toArray() as Promise<UserDbObject[]>;
+  }
+
+  async getUserFollowers(user: UserDbObject): Promise<UserDbObject[]> {
+    return this.provider.usersCollection
+      .find({ following: { $elemMatch: { $eq: user._id } } })
+      .toArray() as Promise<UserDbObject[]>;
+  }
+}

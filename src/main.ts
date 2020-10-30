@@ -3,15 +3,14 @@ import { DIRECTIVES } from '@graphql-codegen/typescript-mongodb';
 import environment from './environment';
 import resolvers from './resolvers';
 import typeDefs from './type-defs';
-import { addMockUserAsync, mongoDbProvider } from './mongo/provider';
+import { mongoDbProvider } from './mongo/provider';
 
 (async function bootstrapAsync(): Promise<void> {
-  await mongoDbProvider.connectAsync(environment.mongodb.dbName);
-  await addMockUserAsync();
+  await mongoDbProvider.connectAsync();
 
   const server = new ApolloServer({
     typeDefs: [DIRECTIVES, typeDefs],
-    resolvers,
+    resolvers: resolvers(mongoDbProvider),
     introspection: environment.apollo.introspection,
     playground: environment.apollo.playground,
   });

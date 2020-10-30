@@ -6,25 +6,18 @@ import {
   QueryGetUserArgs,
   UserDbObject,
 } from '../codegen';
-import {
-  followUser,
-  getSingleUser,
-  getUserFollowers,
-  getUserFollowing,
-  getUserPosts,
-  unFollowUser,
-} from '../mongo/actions/users';
+import { MongoDbProvider } from '../mongo/provider';
 
-export default {
+const usersResolver = (provider: MongoDbProvider) => ({
   Query: {
     getUser: async (_: unknown, { id }: QueryGetUserArgs) =>
-      getSingleUser({ userId: id }),
+      provider.usersAction.getSingleUser({ userId: id }),
   },
 
   Mutation: {
     followUser: async (_: unknown, { userId }: MutationFollowUserArgs) => {
       try {
-        return followUser({
+        return provider.usersAction.followUser({
           followerId: MOCK_MONGO_USER_ID,
           followingId: userId,
         });
@@ -36,7 +29,7 @@ export default {
 
     unFollowUser: async (_: unknown, { userId }: MutationUnFollowUserArgs) => {
       try {
-        return unFollowUser({
+        return provider.usersAction.unFollowUser({
           followerId: MOCK_MONGO_USER_ID,
           followingId: userId,
         });
@@ -49,17 +42,21 @@ export default {
 
   User: {
     id: (obj: UserDbObject): ObjectID => obj._id,
-    posts: async (obj: UserDbObject) => getUserPosts(obj),
+    posts: async (obj: UserDbObject) => provider.usersAction.getUserPosts(obj),
     postCount: async (obj: UserDbObject): Promise<number> => {
-      const posts = await getUserPosts(obj);
+      const posts = await provider.usersAction.getUserPosts(obj);
       return posts.length || 0;
     },
-    following: async (obj: UserDbObject) => getUserFollowing(obj),
+    following: async (obj: UserDbObject) =>
+      provider.usersAction.getUserFollowing(obj),
     followingCount: (obj: UserDbObject): number => obj.following?.length || 0,
-    followers: async (obj: UserDbObject) => getUserFollowers(obj),
+    followers: async (obj: UserDbObject) =>
+      provider.usersAction.getUserFollowers(obj),
     followerCount: async (obj: UserDbObject): Promise<number> => {
-      const posts = await getUserFollowers(obj);
+      const posts = await provider.usersAction.getUserFollowers(obj);
       return posts.length || 0;
     },
   },
-};
+});
+
+export default usersResolver;

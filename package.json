@@ -12,12 +12,13 @@
     "start:ts": "ts-node src/main",
     "start": "node dist/server",
     "watch": "nodemon dist/server",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@shelf/jest-mongodb": "^1.2.3",
     "@types/jest": "^26.0.15",
     "@types/mongodb": "^3.5.31",
     "@types/node": "^14.14.5",
