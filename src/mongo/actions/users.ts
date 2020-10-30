@@ -34,10 +34,12 @@ export default class UserAction {
 
     const following: ObjectID[] = [
       ...(followerUser.following || []).filter(
-        (item) => !item.equals(followerObjId) && !item.equals(followingObjId)
+        (id) =>
+          !(id as ObjectID).equals(followerObjId) &&
+          !(id as ObjectID).equals(followingObjId)
       ),
       followingObjId,
-    ];
+    ] as ObjectID[];
 
     const result = await this.provider.usersCollection.findOneAndUpdate(
       { _id: followerObjId },
@@ -62,10 +64,10 @@ export default class UserAction {
     })) as UserDbObject;
 
     const following: ObjectID[] = [...(followerUser.following || [])].filter(
-      (item) =>
-        !item.equals(followerObjId) &&
-        !item.equals(new ObjectID(followingObjId))
-    );
+      (id) =>
+        !(id as ObjectID).equals(followerObjId) &&
+        !(id as ObjectID).equals(new ObjectID(followingObjId))
+    ) as ObjectID[];
 
     const result = await this.provider.usersCollection.findOneAndUpdate(
       { _id: followerObjId },

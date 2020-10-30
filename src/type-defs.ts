@@ -6,26 +6,26 @@ export default gql`
   scalar UnsignedInt
 
   type User @entity {
-    id: ID! @id
-    firstName: String! @column
-    lastName: String! @column
+    id: ID @id
+    firstName: String @column
+    lastName: String @column
     email: EmailAddress @column(overrideType: "string")
     posts: [Post!]
-    postCount: UnsignedInt!
+    postCount: UnsignedInt
     following: [User!] @link
-    followingCount: UnsignedInt!
+    followingCount: UnsignedInt
     followers: [User!]
-    followerCount: UnsignedInt!
+    followerCount: UnsignedInt
   }
 
   type Post @entity {
-    id: ID! @id
-    title: String! @column
-    content: String! @column
+    id: ID @id
+    title: String @column
+    content: String @column
     author: User! @link
-    publishedAt: DateTime! @column(overrideType: "Date")
+    publishedAt: DateTime! @column(overrideType: "string")
     likedBy: [User!] @link
-    likeCount: UnsignedInt!
+    likeCount: UnsignedInt
   }
 
   type Query {

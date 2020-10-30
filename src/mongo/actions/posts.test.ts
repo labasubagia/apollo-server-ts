@@ -3,7 +3,7 @@ import { ObjectID } from 'mongodb';
 import { postsDummy, usersDummy } from '../dummy';
 import { PAGINATION_SORT_ASC } from '../../const/pagination';
 import { mongoDbMockProvider } from '../provider';
-import { PostDbObject, UserDbObject } from '../../codegen';
+import { PostDbObject } from '../../codegen';
 import { randomIntWithLimit } from '../../utils/random';
 
 describe('mongodb: posts', () => {
@@ -115,7 +115,9 @@ describe('mongodb: posts', () => {
 
     const users = usersDummy
       .slice(randomIntWithLimit(usersDummy.length))
-      .filter((user) => !user._id.equals(post.author));
+      .filter(
+        (user) => !(user._id as ObjectID).equals(post?.author as ObjectID)
+      );
     const userIds = users.map(({ _id }) => _id);
 
     const likeActions = await Promise.all(
@@ -150,8 +152,12 @@ describe('mongodb: posts', () => {
       postsDummy[postIndex]
     )) as PostDbObject;
     const mockAuthor = await mongoDbMockProvider.postsAction.findAuthor(post);
-    const dummyAuthor = usersDummy.find(({ _id }) => _id.equals(post.author));
-    expect(post.author.equals((dummyAuthor as UserDbObject)._id)).toBeTruthy();
+    const dummyAuthor = usersDummy.find(({ _id }) =>
+      (_id as ObjectID).equals(post?.author as ObjectID)
+    );
+    expect(
+      (post?.author as ObjectID).equals(dummyAuthor?._id as ObjectID)
+    ).toBeTruthy();
     expect(mockAuthor).toStrictEqual(dummyAuthor);
   });
 });

@@ -56,8 +56,8 @@ export default class PostAction {
       _id: id,
     })) as PostDbObject;
 
-    const isLiked = post.likedBy?.find((item) => item.equals(likerId));
-    let likes: ObjectID[] = [...(post.likedBy || [])];
+    const isLiked = post.likedBy?.find((item) => item?.equals(likerId));
+    let likes: ObjectID[] = [...(post?.likedBy || [])] as ObjectID[];
     likes = isLiked
       ? likes.filter((item) => !item.equals(likerId))
       : [...likes, likerId];

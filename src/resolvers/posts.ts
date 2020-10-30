@@ -56,7 +56,7 @@ const postsResolver = (provider: MongoDbProvider) => ({
   },
 
   Post: {
-    id: (obj: PostDbObject): ObjectID => obj._id,
+    id: (obj: PostDbObject): ObjectID => obj?._id as ObjectID,
     author: async (obj: PostDbObject) => provider.postsAction.findAuthor(obj),
     likedBy: async (obj: PostDbObject) =>
       provider.postsAction.findLikeUsers(obj),

@@ -1,5 +1,6 @@
 /* eslint-disable jest/no-hooks */
 import { ApolloServerTestClient } from 'apollo-server-testing';
+import { ObjectID } from 'mongodb';
 import { ClientMutation } from '../interfaces/ClientMutation';
 import { ClientQuery } from '../interfaces/ClientQuery';
 import { normalize } from '../utils/graphql';
@@ -8,6 +9,7 @@ import { mongoDbMockProvider } from '../mongo/provider';
 import {
   MutationLikePostArgs,
   MutationPublishPostArgs,
+  Post,
   PostDbObject,
   QueryGetPostArgs,
   UserDbObject,
@@ -48,7 +50,7 @@ describe('e2e mock server', (): void => {
   describe('query getPost', () => {
     it('[use apollo mock] should be able get post', async () => {
       expect.hasAssertions();
-      const expected = {
+      const expected: Post = {
         content: MOCK_GRAPHQL_STRING,
         title: MOCK_GRAPHQL_STRING,
         publishedAt: MOCK_GRAPHQL_DATE_TIME,
@@ -72,7 +74,7 @@ describe('e2e mock server', (): void => {
       const postIndex = randomIntWithLimit(postsDummy.length);
       const dummyPost = postsDummy[postIndex] as PostDbObject;
       const dummyAuthor = usersDummy.find(({ _id }) =>
-        _id.equals(dummyPost.author)
+        (_id as ObjectID).equals(dummyPost?.author as ObjectID)
       ) as UserDbObject;
 
       await mongoDbMockProvider.usersCollection.insertOne(dummyAuthor);
@@ -88,7 +90,7 @@ describe('e2e mock server', (): void => {
       };
       const { data } = await client.query(query);
 
-      const expected = {
+      const expected: Post = {
         title: mockPost.title,
         content: mockPost.content,
         publishedAt: mockPost.publishedAt,

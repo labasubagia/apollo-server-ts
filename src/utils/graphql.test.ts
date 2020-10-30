@@ -7,10 +7,10 @@ describe('graphql util', () => {
   describe('normalizeGraphqlData', () => {
     it('should return plain javascript object', () => {
       expect.hasAssertions();
-      const date = new Date();
+      const date = new Date().toISOString();
       const payload: PostDbObject = {
         _id: new ObjectID(MOCK_MONGO_POST_ID),
-        author: new ObjectID(MOCK_MONGO_USER_ID),
+        author: new ObjectID(MOCK_MONGO_USER_ID) as ObjectID,
         publishedAt: date,
         title: 'Lorem',
         content: 'lorem',
@@ -18,10 +18,9 @@ describe('graphql util', () => {
       const normalized = normalize(payload);
       expect(normalized).toStrictEqual({
         ...payload,
-        _id: String(payload._id),
-        author: String(payload.author),
-        // INFO: JSON.stringify use Date.prototype.tiISOString behind the scene
-        publishedAt: date.toISOString(),
+        _id: String(payload?._id as ObjectID),
+        author: String(payload?.author),
+        publishedAt: date,
       });
     });
   });

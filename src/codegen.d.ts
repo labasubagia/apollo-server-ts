@@ -16,27 +16,27 @@ export type Scalars = {
 
 export type User = {
   __typename?: 'User';
-  id: Scalars['ID'];
-  firstName: Scalars['String'];
-  lastName: Scalars['String'];
+  id?: Maybe<Scalars['ID']>;
+  firstName?: Maybe<Scalars['String']>;
+  lastName?: Maybe<Scalars['String']>;
   email?: Maybe<Scalars['EmailAddress']>;
   posts?: Maybe<Array<Post>>;
-  postCount: Scalars['UnsignedInt'];
+  postCount?: Maybe<Scalars['UnsignedInt']>;
   following?: Maybe<Array<User>>;
-  followingCount: Scalars['UnsignedInt'];
+  followingCount?: Maybe<Scalars['UnsignedInt']>;
   followers?: Maybe<Array<User>>;
-  followerCount: Scalars['UnsignedInt'];
+  followerCount?: Maybe<Scalars['UnsignedInt']>;
 };
 
 export type Post = {
   __typename?: 'Post';
-  id: Scalars['ID'];
-  title: Scalars['String'];
-  content: Scalars['String'];
+  id?: Maybe<Scalars['ID']>;
+  title?: Maybe<Scalars['String']>;
+  content?: Maybe<Scalars['String']>;
   author: User;
   publishedAt: Scalars['DateTime'];
   likedBy?: Maybe<Array<User>>;
-  likeCount: Scalars['UnsignedInt'];
+  likeCount?: Maybe<Scalars['UnsignedInt']>;
 };
 
 export type Query = {
@@ -95,18 +95,18 @@ export type AdditionalEntityFields = {
 
 import { ObjectID } from 'mongodb';
 export type UserDbObject = {
-  _id: ObjectID;
-  firstName: string;
-  lastName: string;
+  _id?: Maybe<ObjectID>;
+  firstName?: Maybe<string>;
+  lastName?: Maybe<string>;
   email?: string;
   following?: Maybe<Array<UserDbObject['_id']>>;
 };
 
 export type PostDbObject = {
-  _id: ObjectID;
-  title: string;
-  content: string;
+  _id?: Maybe<ObjectID>;
+  title?: Maybe<string>;
+  content?: Maybe<string>;
   author: UserDbObject['_id'];
-  publishedAt: Date;
+  publishedAt: string;
   likedBy?: Maybe<Array<UserDbObject['_id']>>;
 };

@@ -41,7 +41,7 @@ const usersResolver = (provider: MongoDbProvider) => ({
   },
 
   User: {
-    id: (obj: UserDbObject): ObjectID => obj._id,
+    id: (obj: UserDbObject): ObjectID => obj?._id as ObjectID,
     posts: async (obj: UserDbObject) => provider.usersAction.getUserPosts(obj),
     postCount: async (obj: UserDbObject): Promise<number> => {
       const posts = await provider.usersAction.getUserPosts(obj);

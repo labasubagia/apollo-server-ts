@@ -29,7 +29,7 @@ export const usersDummy: UserDbObject[] = [
   },
 ];
 
-export const postsDummy: (PostDbObject | { publishedAt: string })[] = [
+export const postsDummy: PostDbObject[] = [
   {
     _id: new ObjectID(),
     title: 'New Way with TailwindCSS',

@@ -47,7 +47,7 @@ describe('mongodb: posts', () => {
     const userIndex = randomIntWithLimit(usersDummy.length);
     const dummyUser = usersDummy[userIndex];
     const dummyUserPosts = postsDummy.filter((post) =>
-      ({ ...post }.author?.equals(dummyUser._id))
+      (post?.author as ObjectID).equals(dummyUser?._id as ObjectID)
     );
     const mockPosts = await mongoDbMockProvider.usersAction.getUserPosts(
       dummyUser
