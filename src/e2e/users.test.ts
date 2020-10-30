@@ -5,7 +5,10 @@ import { normalize } from '../utils/graphql';
 import { setupMockClient } from './setup-client';
 import { FOLLOW_USER, UNFOLLOW_USER } from './queries/users';
 import { mongoDbMockProvider } from '../mongo/provider';
-import { MutationFollowUserArgs, MutationUnFollowUserArgs } from '../codegen';
+import {
+  MutationFollowUserArgs,
+  MutationUnFollowUserArgs,
+} from '../generated/codegen';
 import { MOCK_GRAPHQL_UNSIGNED_INT, MOCK_MONGO_USER_ID } from '../const/mocks';
 
 describe('e2e user', (): void => {

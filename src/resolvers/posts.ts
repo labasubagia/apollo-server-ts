@@ -6,7 +6,7 @@ import {
   PostDbObject,
   QueryGetPostArgs,
   QueryGetPostsArgs,
-} from '../codegen';
+} from '../generated/codegen';
 import { MongoDbProvider } from '../mongo/provider';
 
 const postsResolver = (provider: MongoDbProvider) => ({

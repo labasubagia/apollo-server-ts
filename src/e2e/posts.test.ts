@@ -13,7 +13,7 @@ import {
   PostDbObject,
   QueryGetPostArgs,
   UserDbObject,
-} from '../codegen';
+} from '../generated/codegen';
 import {
   MOCK_GRAPHQL_DATE_TIME,
   MOCK_GRAPHQL_EMAIL,

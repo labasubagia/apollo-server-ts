@@ -3,7 +3,7 @@ import { ObjectID } from 'mongodb';
 import { postsDummy, usersDummy } from '../dummy';
 import { mongoDbMockProvider } from '../provider';
 import { randomIntWithLimit } from '../../utils/random';
-import { UserDbObject } from '../../codegen';
+import { UserDbObject } from '../../generated/codegen';
 
 describe('mongodb: posts', () => {
   beforeAll(async () => {

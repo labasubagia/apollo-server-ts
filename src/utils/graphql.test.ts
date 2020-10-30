@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { PostDbObject } from '../codegen';
+import { PostDbObject } from '../generated/codegen';
 import { MOCK_MONGO_POST_ID, MOCK_MONGO_USER_ID } from '../const/mocks';
 import { normalize } from './graphql';
 

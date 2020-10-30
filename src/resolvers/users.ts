@@ -5,7 +5,7 @@ import {
   MutationUnFollowUserArgs,
   QueryGetUserArgs,
   UserDbObject,
-} from '../codegen';
+} from '../generated/codegen';
 import { MongoDbProvider } from '../mongo/provider';
 
 const usersResolver = (provider: MongoDbProvider) => ({

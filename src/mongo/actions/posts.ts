@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { PostDbObject, UserDbObject } from '../../codegen';
+import { PostDbObject, UserDbObject } from '../../generated/codegen';
 import { MOCK_MONGO_USER_ID } from '../../const/mocks';
 import { PAGINATION_SORT_DESC } from '../../const/pagination';
 import { PaginationParams } from '../../interfaces/PaginationParams';

@@ -3,7 +3,7 @@ import { ObjectID } from 'mongodb';
 import { postsDummy, usersDummy } from '../dummy';
 import { PAGINATION_SORT_ASC } from '../../const/pagination';
 import { mongoDbMockProvider } from '../provider';
-import { PostDbObject } from '../../codegen';
+import { PostDbObject } from '../../generated/codegen';
 import { randomIntWithLimit } from '../../utils/random';
 
 describe('mongodb: posts', () => {

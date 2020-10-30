@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb';
-import { PostDbObject, UserDbObject } from '../codegen';
+import { PostDbObject, UserDbObject } from '../generated/codegen';
 import { randomIntWithLimit } from '../utils/random';
 
 export const usersDummy: UserDbObject[] = [
