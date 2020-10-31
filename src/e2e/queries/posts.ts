@@ -13,6 +13,30 @@ export const FRAGMENT_POST: DocumentNode = gql`
   }
 `;
 
+export const FRAGMENT_POST_IN_LIST: DocumentNode = gql`
+  fragment fragmentPostInList on Post {
+    content
+    title
+    publishedAt
+  }
+`;
+
+export const FRAGMENT_POST_CREATE: DocumentNode = gql`
+  fragment fragmentPostCreate on Post {
+    title
+    content
+  }
+`;
+
+export const QUERY_GET_PAGINATE_POST: DocumentNode = gql`
+  query getPosts($first: Int!, $page: Int, $order: Int) {
+    posts: getPosts(first: $first, page: $page, order: $order) {
+      ...fragmentPostInList
+    }
+  }
+  ${FRAGMENT_POST_IN_LIST}
+`;
+
 export const QUERY_GET_POST: DocumentNode = gql`
   query getPost($id: ID!) {
     post: getPost(id: $id) {
@@ -25,10 +49,10 @@ export const QUERY_GET_POST: DocumentNode = gql`
 export const MUTATION_PUBLISH_POST: DocumentNode = gql`
   mutation publishPost($input: PublishPostInput!) {
     post: publishPost(input: $input) {
-      ...fragmentPost
+      ...fragmentPostCreate
     }
   }
-  ${FRAGMENT_POST}
+  ${FRAGMENT_POST_CREATE}
 `;
 
 export const MUTATION_LIKE_POST: DocumentNode = gql`

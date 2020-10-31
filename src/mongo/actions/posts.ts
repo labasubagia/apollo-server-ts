@@ -1,9 +1,9 @@
 import { ObjectID } from 'mongodb';
 import { PostDbObject, UserDbObject } from '../../generated/codegen';
-import { MOCK_MONGO_USER_ID } from '../../const/mocks';
-import { PAGINATION_SORT_DESC } from '../../const/pagination';
+import { PAGINATION_SORT_ASC } from '../../const/pagination';
 import { PaginationParams } from '../../interfaces/PaginationParams';
 import { MongoDbProvider } from '../provider';
+import { getPaginationSkip } from '../../utils/pagination';
 
 export default class PostAction {
   private provider: MongoDbProvider;
@@ -14,10 +14,13 @@ export default class PostAction {
   }
 
   async getAllPostPaginate(params: PaginationParams): Promise<PostDbObject[]> {
-    const skip = params.first * (params.page ? params.page - 1 : 0);
+    const skip = getPaginationSkip({
+      pageSize: params.first,
+      pageNumber: params.page || 1,
+    });
     const result = await this.provider.postsCollection
       .find()
-      .sort({ _id: params.order || PAGINATION_SORT_DESC })
+      .sort({ _id: params.order || PAGINATION_SORT_ASC })
       .skip(skip)
       .limit(params.first)
       .toArray();
@@ -45,11 +48,11 @@ export default class PostAction {
     userId,
     postId,
   }: {
-    userId?: string;
+    userId: string;
     postId: string;
   }): Promise<PostDbObject | null> {
     const id = new ObjectID(postId);
-    const likerId = new ObjectID(userId || MOCK_MONGO_USER_ID);
+    const likerId = new ObjectID(userId);
     const post = (await this.provider.postsCollection.findOne({
       _id: id,
     })) as PostDbObject;

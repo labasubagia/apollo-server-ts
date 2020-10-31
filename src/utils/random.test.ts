@@ -1,4 +1,4 @@
-import { randomIntWithLimit } from './random';
+import { randomBoolean, randomIntWithLimit } from './random';
 
 describe('utils: random', () => {
   describe('randomIntWithLimit', () => {
@@ -26,6 +26,14 @@ describe('utils: random', () => {
       expect.hasAssertions();
       const actual = randomIntWithLimit(10);
       expect(Number.isInteger(actual)).toBeTruthy();
+    });
+  });
+
+  describe('randomBoolean', () => {
+    it('should return boolean', () => {
+      expect.hasAssertions();
+      const actual = typeof randomBoolean() === 'boolean';
+      expect(actual).toBeTruthy();
     });
   });
 });

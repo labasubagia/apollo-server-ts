@@ -1,3 +1,4 @@
+import { MockList } from 'apollo-server';
 import {
   MOCK_GRAPHQL_DATE_TIME,
   MOCK_GRAPHQL_EMAIL,
@@ -6,6 +7,7 @@ import {
   MOCK_GRAPHQL_STRING,
   MOCK_GRAPHQL_UNSIGNED_INT,
 } from './const/mocks';
+import { PAGINATION_DEFAULT_SIZE } from './const/pagination';
 
 export default {
   // Builtin scalar
@@ -17,4 +19,9 @@ export default {
   DateTime: () => MOCK_GRAPHQL_DATE_TIME,
   EmailAddress: () => MOCK_GRAPHQL_EMAIL,
   UnsignedInt: () => MOCK_GRAPHQL_UNSIGNED_INT,
+
+  // Query Mock
+  Query: () => ({
+    getPosts: () => new MockList(PAGINATION_DEFAULT_SIZE),
+  }),
 };

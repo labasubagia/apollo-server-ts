@@ -1,5 +1,6 @@
 import { ObjectID } from 'mongodb';
 import { MOCK_MONGO_USER_ID } from '../const/mocks';
+import { PAGINATION_SORT_ASC } from '../const/pagination';
 import {
   MutationLikePostArgs,
   MutationPublishPostArgs,
@@ -13,9 +14,14 @@ const postsResolver = (provider: MongoDbProvider) => ({
   Query: {
     getPosts: async (
       _: unknown,
-      { first, page }: QueryGetPostsArgs
-    ): Promise<PostDbObject[]> =>
-      provider.postsAction.getAllPostPaginate({ first, page }),
+      { first, page, order }: QueryGetPostsArgs
+    ): Promise<PostDbObject[]> => {
+      return provider.postsAction.getAllPostPaginate({
+        first,
+        page,
+        order: order || PAGINATION_SORT_ASC,
+      });
+    },
 
     getPost: async (
       _: unknown,
@@ -29,6 +35,7 @@ const postsResolver = (provider: MongoDbProvider) => ({
       { input: { title, content } }: MutationPublishPostArgs
     ): Promise<PostDbObject | null> => {
       try {
+        // TODO: add user authentication for author
         const payload: PostDbObject = {
           title,
           content,
@@ -47,7 +54,11 @@ const postsResolver = (provider: MongoDbProvider) => ({
       { postId }: MutationLikePostArgs
     ): Promise<PostDbObject | null> => {
       try {
-        return provider.postsAction.likePost({ postId });
+        // TODO: add user authentication for author
+        return provider.postsAction.likePost({
+          userId: MOCK_MONGO_USER_ID,
+          postId,
+        });
       } catch (error) {
         console.error({ error });
         return null;

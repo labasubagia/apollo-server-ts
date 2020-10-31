@@ -4,27 +4,29 @@ import { ClientMutation } from '../interfaces/ClientMutation';
 import { normalize } from '../utils/graphql';
 import { setupMockClient } from './setup-client';
 import { FOLLOW_USER, UNFOLLOW_USER } from './queries/users';
-import { mongoDbMockProvider } from '../mongo/provider';
+import { mongoDbMockProvider, MongoDbProvider } from '../mongo/provider';
 import {
   MutationFollowUserArgs,
   MutationUnFollowUserArgs,
 } from '../generated/codegen';
-import { MOCK_GRAPHQL_UNSIGNED_INT, MOCK_MONGO_USER_ID } from '../const/mocks';
+import { MOCK_MONGO_USER_ID } from '../const/mocks';
+import { expectedUserFollow } from './mock-data';
 
 describe('e2e user', (): void => {
+  const provider: MongoDbProvider = mongoDbMockProvider;
   let mockClient: ApolloServerTestClient;
 
   beforeAll(async () => {
-    await mongoDbMockProvider.connectAsync();
-    mockClient = setupMockClient(mongoDbMockProvider);
+    await provider.connectAsync();
+    mockClient = setupMockClient(provider);
   });
 
   afterAll(async () => {
-    await mongoDbMockProvider.closeAsync();
+    await provider.closeAsync();
   });
 
   afterEach(async () => {
-    await mongoDbMockProvider.removeAllData();
+    await provider.removeAllData();
   });
 
   describe('mutation followUser', () => {
@@ -39,11 +41,7 @@ describe('e2e user', (): void => {
         },
       };
       const { data } = await mockClient.mutate(mutation);
-      expect(normalize(data)).toStrictEqual({
-        user: {
-          followingCount: MOCK_GRAPHQL_UNSIGNED_INT,
-        },
-      });
+      expect(normalize(data)).toStrictEqual({ user: expectedUserFollow });
     });
   });
 
@@ -59,11 +57,7 @@ describe('e2e user', (): void => {
         },
       };
       const { data } = await mockClient.mutate(mutation);
-      expect(normalize(data)).toStrictEqual({
-        user: {
-          followingCount: MOCK_GRAPHQL_UNSIGNED_INT,
-        },
-      });
+      expect(normalize(data)).toStrictEqual({ user: expectedUserFollow });
     });
   });
 });

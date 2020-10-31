@@ -22,14 +22,14 @@ export default gql`
     id: ID @id
     title: String @column
     content: String @column
-    author: User! @link
-    publishedAt: DateTime! @column(overrideType: "string")
+    author: User @link
+    publishedAt: DateTime @column(overrideType: "string")
     likedBy: [User!] @link
     likeCount: UnsignedInt
   }
 
   type Query {
-    getPosts(first: Int!, page: Int = 1): [Post!]!
+    getPosts(first: Int!, page: Int = 1, order: Int = 1): [Post!]!
     getPost(id: ID!): Post
     getUser(id: ID!): User
   }

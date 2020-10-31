@@ -33,8 +33,8 @@ export type Post = {
   id?: Maybe<Scalars['ID']>;
   title?: Maybe<Scalars['String']>;
   content?: Maybe<Scalars['String']>;
-  author: User;
-  publishedAt: Scalars['DateTime'];
+  author?: Maybe<User>;
+  publishedAt?: Maybe<Scalars['DateTime']>;
   likedBy?: Maybe<Array<User>>;
   likeCount?: Maybe<Scalars['UnsignedInt']>;
 };
@@ -49,6 +49,7 @@ export type Query = {
 export type QueryGetPostsArgs = {
   first: Scalars['Int'];
   page?: Maybe<Scalars['Int']>;
+  order?: Maybe<Scalars['Int']>;
 };
 
 export type QueryGetPostArgs = {
@@ -106,7 +107,7 @@ export type PostDbObject = {
   _id?: Maybe<ObjectID>;
   title?: Maybe<string>;
   content?: Maybe<string>;
-  author: UserDbObject['_id'];
-  publishedAt: string;
+  author?: Maybe<UserDbObject['_id']>;
+  publishedAt?: string;
   likedBy?: Maybe<Array<UserDbObject['_id']>>;
 };
