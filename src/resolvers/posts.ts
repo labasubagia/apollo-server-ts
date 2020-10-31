@@ -1,5 +1,5 @@
+import { AuthenticationError } from 'apollo-server';
 import { ObjectID } from 'mongodb';
-import { MOCK_MONGO_USER_ID } from '../const/mocks';
 import { PAGINATION_SORT_ASC } from '../const/pagination';
 import {
   MutationLikePostArgs,
@@ -32,29 +32,34 @@ const postsResolver = (provider: MongoDbProvider) => ({
   Mutation: {
     publishPost: async (
       _: unknown,
-      { input: { title, content } }: MutationPublishPostArgs
+      { input: { title, content } }: MutationPublishPostArgs,
+      context: any
     ): Promise<PostDbObject | null> => {
-      try {
-        const payload: PostDbObject = {
-          title,
-          content,
-          author: new ObjectID(MOCK_MONGO_USER_ID),
-          publishedAt: new Date().toISOString(),
-        };
-        return provider.postsAction.insertPost(payload);
-      } catch (error) {
-        console.error({ error });
-        return null;
-      }
+      const user = await provider.usersAction.getSingleUserByJwtToken(
+        context?.token
+      );
+      if (!user) throw new AuthenticationError('Please login');
+      const payload: PostDbObject = {
+        title,
+        content,
+        author: user?._id,
+        publishedAt: new Date().toISOString(),
+      };
+      return provider.postsAction.insertPost(payload);
     },
 
     likePost: async (
       _: unknown,
-      { postId }: MutationLikePostArgs
+      { postId }: MutationLikePostArgs,
+      context: any
     ): Promise<PostDbObject | null> => {
       try {
+        const user = await provider.usersAction.getSingleUserByJwtToken(
+          context?.token
+        );
+        if (!user) throw new AuthenticationError('Please login');
         return provider.postsAction.likePost({
-          userId: MOCK_MONGO_USER_ID,
+          userId: String(user?._id),
           postId,
         });
       } catch (error) {

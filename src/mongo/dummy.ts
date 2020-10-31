@@ -1,5 +1,8 @@
 import { ObjectID } from 'mongodb';
+import { MOCK_MONGO_USER_ID } from '../const/mocks';
 import { PostDbObject, UserDbObject } from '../generated/codegen';
+import { TokenPayload } from '../interfaces/TokenPayload';
+import { signJwtToken } from '../utils/auth';
 import { randomIntWithLimit } from '../utils/random';
 
 export const usersDummy: UserDbObject[] = [
@@ -48,3 +51,23 @@ export const postsDummy: PostDbObject[] = [
     publishedAt: new Date().toISOString(),
   },
 ];
+
+// * Mock user for e2e Test
+// ? Steps
+// - Register with this user when initiate mock server with database (with loginMockUserForAuth())
+// - Insert this user on beforeEach() test if database reset on afterEach()
+//   (with insertMockAuthUser() from user action)
+export const mockUserForAuth: UserDbObject & { password?: string } = {
+  _id: new ObjectID(MOCK_MONGO_USER_ID),
+  username: 'tom_jerry',
+  email: 't.jerry@mail.com',
+};
+
+export const loginMockUserForAuth = () => {
+  const payload: TokenPayload = {
+    id: String(mockUserForAuth._id),
+    email: mockUserForAuth.email as string,
+    username: mockUserForAuth.username as string,
+  };
+  return signJwtToken(payload);
+};

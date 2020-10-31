@@ -1,6 +1,7 @@
 import { ObjectID } from 'mongodb';
 import { PostDbObject, User, UserDbObject } from '../../generated/codegen';
 import { verifyJwtToken } from '../../utils/auth';
+import { mockUserForAuth } from '../dummy';
 import { MongoDbProvider } from '../provider';
 
 export default class UserAction {
@@ -122,5 +123,25 @@ export default class UserAction {
     return this.provider.usersCollection
       .find({ following: { $elemMatch: { $eq: user._id } } })
       .toArray() as Promise<UserDbObject[]>;
+  }
+
+  // Mockers
+
+  async insertMockAuthUser(): Promise<UserDbObject | null> {
+    return this.insertUser(mockUserForAuth);
+  }
+
+  async getMockAuthUser(): Promise<UserDbObject | null> {
+    const user = (await this.provider.usersCollection.findOne({
+      _id: mockUserForAuth?._id,
+    })) as UserDbObject;
+    return user;
+  }
+
+  async deleteMockAuthUser(): Promise<boolean> {
+    const deleted = await this.provider.usersCollection.deleteOne({
+      _id: mockUserForAuth?._id,
+    });
+    return deleted.result.ok === 1;
   }
 }

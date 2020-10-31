@@ -8,9 +8,9 @@ import {
   MutationRegisterArgs,
   MutationUnFollowUserArgs,
   QueryGetUserArgs,
-  User,
   UserDbObject,
 } from '../generated/codegen';
+import { TokenPayload } from '../interfaces/TokenPayload';
 import { MongoDbProvider } from '../mongo/provider';
 import { signJwtToken } from '../utils/auth';
 
@@ -36,10 +36,10 @@ const usersResolver = (provider: MongoDbProvider) => ({
       });
       if (!user) throw new AuthenticationError('Registration failed');
 
-      const jwtObj: User = {
+      const jwtObj: TokenPayload = {
         id: String(user._id),
-        username: user.username,
-        email: user.email,
+        username: user.username as string,
+        email: user.email as string,
       };
       return signJwtToken(jwtObj);
     },
@@ -62,10 +62,10 @@ const usersResolver = (provider: MongoDbProvider) => ({
       if (!isPasswordMatch)
         throw new AuthenticationError('Credentials not match');
 
-      const jwtObj: User = {
+      const jwtObj: TokenPayload = {
         id: String(user._id),
-        username: user.username,
-        email: user.email,
+        username: user.username as string,
+        email: user.email as string,
       };
       return signJwtToken(jwtObj);
     },

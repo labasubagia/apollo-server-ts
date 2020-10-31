@@ -36,8 +36,8 @@ export default class PostAction {
   }
 
   async insertPost(payload: PostDbObject): Promise<PostDbObject | null> {
-    const author = await this.provider.usersCollection.find({
-      _id: { ...payload }.author,
+    const author = await this.provider.usersAction.getSingleUser({
+      userId: String(payload?.author),
     });
     if (!author) throw new Error('Author not found');
     const result = await this.provider.postsCollection.insertOne(payload);
@@ -53,6 +53,9 @@ export default class PostAction {
   }): Promise<PostDbObject | null> {
     const id = new ObjectID(postId);
     const likerId = new ObjectID(userId);
+
+    const user = await this.provider.usersAction.getSingleUser({ userId });
+    if (!user) throw new Error('User not found');
 
     const post = (await this.provider.postsCollection.findOne({
       _id: id,

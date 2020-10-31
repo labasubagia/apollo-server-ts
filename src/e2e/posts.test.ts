@@ -4,7 +4,7 @@ import { ObjectID } from 'mongodb';
 import { ClientMutation } from '../interfaces/ClientMutation';
 import { ClientQuery } from '../interfaces/ClientQuery';
 import { normalize } from '../utils/graphql';
-import { setupDefaultClient, setupMockClient } from './setup-client';
+import { setupDefaultClient, setupMockClient } from './utils/setup-client';
 import { mongoDbMockProvider, MongoDbProvider } from '../mongo/provider';
 import {
   MutationLikePostArgs,
@@ -15,11 +15,7 @@ import {
   QueryGetPostsArgs,
   UserDbObject,
 } from '../generated/codegen';
-import {
-  MOCK_GRAPHQL_STRING,
-  MOCK_GRAPHQL_UNSIGNED_INT,
-  MOCK_MONGO_POST_ID,
-} from '../const/mocks';
+import { MOCK_GRAPHQL_UNSIGNED_INT, MOCK_MONGO_POST_ID } from '../const/mocks';
 import {
   MUTATION_LIKE_POST,
   MUTATION_PUBLISH_POST,
@@ -28,7 +24,7 @@ import {
 } from './queries/posts';
 import { postsDummy, usersDummy } from '../mongo/dummy';
 import { randomIntWithLimit } from '../utils/random';
-import { expectedPost } from './mock-data';
+import { expectedPost } from './utils/mock-data';
 import {
   PAGINATION_DEFAULT_SIZE,
   PAGINATION_SORT_ASC,
@@ -37,7 +33,7 @@ import {
 import { PaginationParams } from '../interfaces/PaginationParams';
 import { getTotalPage } from '../utils/pagination';
 
-describe('e2e mock server', (): void => {
+describe('e2e post', (): void => {
   const provider: MongoDbProvider = mongoDbMockProvider;
   let mockClient: ApolloServerTestClient;
   let client: ApolloServerTestClient;
@@ -50,6 +46,11 @@ describe('e2e mock server', (): void => {
 
   afterAll(async () => {
     await provider.closeAsync();
+  });
+
+  beforeEach(async () => {
+    // Token of this user already set in apollo setup
+    await provider.usersAction.insertMockAuthUser();
   });
 
   afterEach(async () => {
@@ -158,20 +159,30 @@ describe('e2e mock server', (): void => {
   });
 
   describe('mutation: publishPost', () => {
-    it('[use apollo mock] should mock publish a post', async (): Promise<
-      void
-    > => {
+    const postIndex = randomIntWithLimit(postsDummy.length);
+    const dummyPost = postsDummy[postIndex];
+    const mutation: ClientMutation<MutationPublishPostArgs> = {
+      mutation: MUTATION_PUBLISH_POST,
+      variables: {
+        input: {
+          title: dummyPost?.title as string,
+          content: dummyPost?.content as string,
+        },
+      },
+    };
+
+    it('[use apollo mock] should be able to publish a post', async () => {
       expect.hasAssertions();
-      const mutation: ClientMutation<MutationPublishPostArgs> = {
-        mutation: MUTATION_PUBLISH_POST,
+      const mockMutation: ClientMutation<MutationPublishPostArgs> = {
+        ...mutation,
         variables: {
           input: {
-            title: MOCK_GRAPHQL_STRING,
-            content: MOCK_GRAPHQL_STRING,
+            title: expectedPost?.title as string,
+            content: expectedPost?.content as string,
           },
         },
       };
-      const { data } = await mockClient.mutate(mutation);
+      const { data } = await mockClient.mutate(mockMutation);
       const expected = {
         title: expectedPost.title,
         content: expectedPost.content,
@@ -179,27 +190,23 @@ describe('e2e mock server', (): void => {
       expect(normalize(data)).toStrictEqual({ post: expected });
     });
 
-    it('[use mongo] should mock publish a post', async () => {
-      // TODO: add user authentication
+    it('[use mongo] should be able to publish a post', async () => {
       expect.hasAssertions();
-      await provider.usersCollection.insertMany(usersDummy);
-      const postIndex = randomIntWithLimit(postsDummy.length);
-      const dummyPost = postsDummy[postIndex];
-      const mutation: ClientMutation<MutationPublishPostArgs> = {
-        mutation: MUTATION_PUBLISH_POST,
-        variables: {
-          input: {
-            title: dummyPost?.title as string,
-            content: dummyPost?.content as string,
-          },
-        },
-      };
       const { data } = await client.mutate(mutation);
-      const expected = {
+      const expected: Post = {
         title: dummyPost?.title,
         content: dummyPost?.content,
       };
       expect(normalize(data)).toStrictEqual({ post: expected });
+    });
+
+    it('[use mongo] should not be able to publish post because user not found', async () => {
+      expect.hasAssertions();
+      await provider.usersAction.deleteMockAuthUser();
+      const { data, errors } = await client.mutate(mutation);
+      expect(errors).toBeTruthy();
+      expect(data?.post).toBeFalsy();
+      expect(errors?.[0]?.message).toStrictEqual('Please login');
     });
   });
 

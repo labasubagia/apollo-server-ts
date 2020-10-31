@@ -2,7 +2,7 @@
 import { ApolloServerTestClient } from 'apollo-server-testing';
 import { ClientMutation } from '../interfaces/ClientMutation';
 import { normalize } from '../utils/graphql';
-import { setupDefaultClient, setupMockClient } from './setup-client';
+import { setupDefaultClient, setupMockClient } from './utils/setup-client';
 import {
   FOLLOW_USER,
   LOGIN_USER,
@@ -19,7 +19,7 @@ import {
   UserDbObject,
 } from '../generated/codegen';
 import { MOCK_GRAPHQL_STRING, MOCK_MONGO_USER_ID } from '../const/mocks';
-import { expectedUserFollow } from './mock-data';
+import { expectedUserFollow } from './utils/mock-data';
 import { usersDummy } from '../mongo/dummy';
 import { randomIntWithLimit } from '../utils/random';
 import { verifyJwtToken } from '../utils/auth';
@@ -37,6 +37,11 @@ describe('e2e user', (): void => {
 
   afterAll(async () => {
     await provider.closeAsync();
+  });
+
+  beforeEach(async () => {
+    // Token of this user already set in apollo setup
+    await provider.usersAction.insertMockAuthUser();
   });
 
   afterEach(async () => {
