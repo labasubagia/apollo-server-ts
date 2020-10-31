@@ -1,12 +1,18 @@
+import { AuthenticationError, ValidationError } from 'apollo-server';
+import bcrypt from 'bcrypt';
 import { ObjectID } from 'mongodb';
 import { MOCK_MONGO_USER_ID } from '../const/mocks';
 import {
   MutationFollowUserArgs,
+  MutationLoginArgs,
+  MutationRegisterArgs,
   MutationUnFollowUserArgs,
   QueryGetUserArgs,
+  User,
   UserDbObject,
 } from '../generated/codegen';
 import { MongoDbProvider } from '../mongo/provider';
+import { signJwtToken } from '../utils/auth';
 
 const usersResolver = (provider: MongoDbProvider) => ({
   Query: {
@@ -15,6 +21,55 @@ const usersResolver = (provider: MongoDbProvider) => ({
   },
 
   Mutation: {
+    register: async (
+      _: unknown,
+      args: MutationRegisterArgs
+    ): Promise<string | null> => {
+      const exist: UserDbObject | null = await provider.usersCollection.findOne(
+        { username: args.input.username }
+      );
+      if (exist) throw new ValidationError('Username already taken');
+
+      const user = await provider.usersAction.insertUser({
+        ...args.input,
+        password: await bcrypt.hash(args.input.password, 12),
+      });
+      if (!user) throw new AuthenticationError('Registration failed');
+
+      const jwtObj: User = {
+        id: String(user._id),
+        username: user.username,
+        email: user.email,
+      };
+      return signJwtToken(jwtObj);
+    },
+
+    login: async (
+      _: unknown,
+      args: MutationLoginArgs
+    ): Promise<string | null> => {
+      const user:
+        | (UserDbObject & { password?: string })
+        | null = await provider.usersCollection.findOne({
+        username: args.input.username,
+      });
+      if (!user) throw new ValidationError('User not found');
+
+      const isPasswordMatch = await bcrypt.compare(
+        args.input.password,
+        user?.password as string
+      );
+      if (!isPasswordMatch)
+        throw new AuthenticationError('Credentials not match');
+
+      const jwtObj: User = {
+        id: String(user._id),
+        username: user.username,
+        email: user.email,
+      };
+      return signJwtToken(jwtObj);
+    },
+
     followUser: async (_: unknown, { userId }: MutationFollowUserArgs) => {
       try {
         return provider.usersAction.followUser({

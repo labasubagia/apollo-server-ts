@@ -1,5 +1,6 @@
 import { ObjectID } from 'mongodb';
-import { PostDbObject, UserDbObject } from '../../generated/codegen';
+import { PostDbObject, User, UserDbObject } from '../../generated/codegen';
+import { verifyJwtToken } from '../../utils/auth';
 import { MongoDbProvider } from '../provider';
 
 export default class UserAction {
@@ -10,12 +11,40 @@ export default class UserAction {
     this.provider = provider;
   }
 
-  async getSingleUser({ userId }: { userId: string }): Promise<UserDbObject> {
+  async getSingleUserByJwtToken(token: string): Promise<UserDbObject | null> {
+    try {
+      if (!token) return null;
+      const jwtObj: User | object | string = verifyJwtToken(token);
+      const user = await this.getSingleUser({
+        userId: (jwtObj as User).id as string,
+      });
+      return user;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  }
+
+  async getSingleUser({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<UserDbObject | null> {
     const objId = new ObjectID(userId);
-    const result = await this.provider.usersCollection.findOne({
-      _id: objId,
-    });
-    return result as UserDbObject;
+    const result = await this.provider.usersCollection.findOne(
+      {
+        _id: objId,
+      },
+      { projection: { password: false } }
+    );
+    return result;
+  }
+
+  async insertUser(
+    user: UserDbObject & { password?: string }
+  ): Promise<UserDbObject | null> {
+    const result = await this.provider.usersCollection.insertOne(user);
+    return result.ops[0] as UserDbObject;
   }
 
   async followUser({

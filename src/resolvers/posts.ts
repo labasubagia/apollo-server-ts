@@ -35,7 +35,6 @@ const postsResolver = (provider: MongoDbProvider) => ({
       { input: { title, content } }: MutationPublishPostArgs
     ): Promise<PostDbObject | null> => {
       try {
-        // TODO: add user authentication for author
         const payload: PostDbObject = {
           title,
           content,
@@ -54,7 +53,6 @@ const postsResolver = (provider: MongoDbProvider) => ({
       { postId }: MutationLikePostArgs
     ): Promise<PostDbObject | null> => {
       try {
-        // TODO: add user authentication for author
         return provider.postsAction.likePost({
           userId: MOCK_MONGO_USER_ID,
           postId,

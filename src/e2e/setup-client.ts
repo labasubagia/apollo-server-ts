@@ -1,5 +1,5 @@
 import { DIRECTIVES } from '@graphql-codegen/typescript-mongodb';
-import { Config, ApolloServer } from 'apollo-server';
+import { ApolloServer } from 'apollo-server';
 import {
   ApolloServerTestClient,
   createTestClient,
@@ -9,21 +9,29 @@ import typeDefs from '../type-defs';
 import mocks from '../mocks';
 import { MongoDbProvider } from '../mongo/provider';
 
-export const setupClient = (config: Config): ApolloServerTestClient => {
-  const testApolloServer = new ApolloServer(config);
-  return createTestClient(testApolloServer);
-};
+export const setupDefaultClient = (
+  provider: MongoDbProvider
+): ApolloServerTestClient =>
+  createTestClient(
+    new ApolloServer({
+      typeDefs: [DIRECTIVES, typeDefs],
+      resolvers: resolvers(provider),
+      context: ({ req }) => {
+        const authHeader = req?.headers?.authorization || 'Bearer ';
+        const token = authHeader.split(' ')[1];
+        return { req, token };
+      },
+    })
+  );
 
-export const setupDefaultClient = (provider: MongoDbProvider) =>
-  setupClient({
-    typeDefs: [DIRECTIVES, typeDefs],
-    resolvers: resolvers(provider),
-  });
-
-export const setupMockClient = (provider: MongoDbProvider) =>
-  setupClient({
-    typeDefs: [DIRECTIVES, typeDefs],
-    resolvers: resolvers(provider),
-    mocks,
-    mockEntireSchema: true,
-  });
+export const setupMockClient = (
+  provider: MongoDbProvider
+): ApolloServerTestClient =>
+  createTestClient(
+    new ApolloServer({
+      typeDefs: [DIRECTIVES, typeDefs],
+      resolvers: resolvers(provider),
+      mocks,
+      mockEntireSchema: true,
+    })
+  );

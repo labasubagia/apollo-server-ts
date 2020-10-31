@@ -5,26 +5,22 @@ import { randomIntWithLimit } from '../utils/random';
 export const usersDummy: UserDbObject[] = [
   {
     _id: new ObjectID(),
-    firstName: 'John',
-    lastName: 'Terry',
+    username: 'John Terry',
     email: 'john@mail.com',
   },
   {
     _id: new ObjectID(),
-    firstName: 'Martin',
-    lastName: 'Luke',
+    username: 'Martin Luke',
     email: 'luke@mail.com',
   },
   {
     _id: new ObjectID(),
-    firstName: 'Christina',
-    lastName: 'Perry',
+    username: 'Christina Perry',
     email: 'christina.perry@mail.com',
   },
   {
     _id: new ObjectID(),
-    firstName: 'Manuel',
-    lastName: 'George',
+    username: 'Manuel George',
     email: 'm.george@mail.com',
   },
 ];

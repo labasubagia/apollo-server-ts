@@ -3,14 +3,20 @@ import { DIRECTIVES } from '@graphql-codegen/typescript-mongodb';
 import environment from './environment';
 import resolvers from './resolvers';
 import typeDefs from './type-defs';
-import { mongoDbProvider } from './mongo/provider';
+import { MongoDbProvider, mongoDbProvider } from './mongo/provider';
 
 (async function bootstrapAsync(): Promise<void> {
-  await mongoDbProvider.connectAsync();
+  const provider: MongoDbProvider = mongoDbProvider;
+  await provider.connectAsync();
 
   const server = new ApolloServer({
     typeDefs: [DIRECTIVES, typeDefs],
-    resolvers: resolvers(mongoDbProvider),
+    resolvers: resolvers(provider),
+    context: async ({ req }) => {
+      const authHeader = req.headers.authorization || 'Bearer ';
+      const token = authHeader.split(' ')[1];
+      return { req, token };
+    },
     introspection: environment.apollo.introspection,
     playground: environment.apollo.playground,
   });
@@ -24,7 +30,7 @@ import { mongoDbProvider } from './mongo/provider';
     module.hot.accept();
     module.hot.dispose(() => {
       console.log('Module disposed.');
-      mongoDbProvider.closeAsync();
+      provider.closeAsync();
     });
   }
 })();

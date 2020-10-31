@@ -13,7 +13,7 @@ export const expectedPost: Post = {
   publishedAt: MOCK_GRAPHQL_DATE_TIME,
   author: {
     email: MOCK_GRAPHQL_EMAIL,
-    firstName: MOCK_GRAPHQL_STRING,
+    username: MOCK_GRAPHQL_STRING,
   },
 };
 

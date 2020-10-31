@@ -7,8 +7,7 @@ export default gql`
 
   type User @entity {
     id: ID @id
-    firstName: String @column
-    lastName: String @column
+    username: String @column
     email: EmailAddress @column(overrideType: "string")
     posts: [Post!]
     postCount: UnsignedInt
@@ -34,15 +33,28 @@ export default gql`
     getUser(id: ID!): User
   }
 
+  type Mutation {
+    publishPost(input: PublishPostInput!): Post
+    likePost(postId: ID!): Post
+    register(input: RegisterInput!): String
+    login(input: LoginInput!): String
+    followUser(userId: ID!): User
+    unFollowUser(userId: ID!): User
+  }
+
   input PublishPostInput {
     title: String!
     content: String!
   }
 
-  type Mutation {
-    publishPost(input: PublishPostInput!): Post
-    followUser(userId: ID!): User
-    unFollowUser(userId: ID!): User
-    likePost(postId: ID!): Post
+  input RegisterInput {
+    username: String!
+    password: String!
+    email: String!
+  }
+
+  input LoginInput {
+    username: String!
+    password: String!
   }
 `;

@@ -17,8 +17,7 @@ export type Scalars = {
 export type User = {
   __typename?: 'User';
   id?: Maybe<Scalars['ID']>;
-  firstName?: Maybe<Scalars['String']>;
-  lastName?: Maybe<Scalars['String']>;
+  username?: Maybe<Scalars['String']>;
   email?: Maybe<Scalars['EmailAddress']>;
   posts?: Maybe<Array<Post>>;
   postCount?: Maybe<Scalars['UnsignedInt']>;
@@ -60,21 +59,30 @@ export type QueryGetUserArgs = {
   id: Scalars['ID'];
 };
 
-export type PublishPostInput = {
-  title: Scalars['String'];
-  content: Scalars['String'];
-};
-
 export type Mutation = {
   __typename?: 'Mutation';
   publishPost?: Maybe<Post>;
+  likePost?: Maybe<Post>;
+  register?: Maybe<Scalars['String']>;
+  login?: Maybe<Scalars['String']>;
   followUser?: Maybe<User>;
   unFollowUser?: Maybe<User>;
-  likePost?: Maybe<Post>;
 };
 
 export type MutationPublishPostArgs = {
   input: PublishPostInput;
+};
+
+export type MutationLikePostArgs = {
+  postId: Scalars['ID'];
+};
+
+export type MutationRegisterArgs = {
+  input: RegisterInput;
+};
+
+export type MutationLoginArgs = {
+  input: LoginInput;
 };
 
 export type MutationFollowUserArgs = {
@@ -85,8 +93,20 @@ export type MutationUnFollowUserArgs = {
   userId: Scalars['ID'];
 };
 
-export type MutationLikePostArgs = {
-  postId: Scalars['ID'];
+export type PublishPostInput = {
+  title: Scalars['String'];
+  content: Scalars['String'];
+};
+
+export type RegisterInput = {
+  username: Scalars['String'];
+  password: Scalars['String'];
+  email: Scalars['String'];
+};
+
+export type LoginInput = {
+  username: Scalars['String'];
+  password: Scalars['String'];
 };
 
 export type AdditionalEntityFields = {
@@ -97,8 +117,7 @@ export type AdditionalEntityFields = {
 import { ObjectID } from 'mongodb';
 export type UserDbObject = {
   _id?: Maybe<ObjectID>;
-  firstName?: Maybe<string>;
-  lastName?: Maybe<string>;
+  username?: Maybe<string>;
   email?: string;
   following?: Maybe<Array<UserDbObject['_id']>>;
 };

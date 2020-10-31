@@ -8,7 +8,7 @@ export const FRAGMENT_POST: DocumentNode = gql`
     publishedAt
     author {
       email
-      firstName
+      username
     }
   }
 `;

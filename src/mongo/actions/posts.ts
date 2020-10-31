@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId, ObjectID } from 'mongodb';
 import { PostDbObject, UserDbObject } from '../../generated/codegen';
 import { PAGINATION_SORT_ASC } from '../../const/pagination';
 import { PaginationParams } from '../../interfaces/PaginationParams';
@@ -53,15 +53,38 @@ export default class PostAction {
   }): Promise<PostDbObject | null> {
     const id = new ObjectID(postId);
     const likerId = new ObjectID(userId);
+
     const post = (await this.provider.postsCollection.findOne({
       _id: id,
     })) as PostDbObject;
 
-    const isLiked = post.likedBy?.find((item) => item?.equals(likerId));
-    let likes: ObjectID[] = [...(post?.likedBy || [])] as ObjectID[];
-    likes = isLiked
-      ? likes.filter((item) => !item.equals(likerId))
-      : [...likes, likerId];
+    const likes: ObjectID[] = [...(post?.likedBy || []), likerId] as ObjectID[];
+
+    const result = await this.provider.postsCollection.findOneAndUpdate(
+      { _id: id },
+      { $set: { likedBy: likes } },
+      { returnOriginal: false }
+    );
+    return result.value as PostDbObject;
+  }
+
+  async unLikePost({
+    userId,
+    postId,
+  }: {
+    userId: string;
+    postId: string;
+  }): Promise<PostDbObject> {
+    const id = new ObjectID(postId);
+    const likerId = new ObjectID(userId);
+
+    const post = (await this.provider.postsCollection.findOne({
+      _id: id,
+    })) as PostDbObject;
+
+    const likes: ObjectID[] = [...((post?.likedBy || []) as ObjectId[])].filter(
+      (item) => !item?.equals(likerId)
+    );
 
     const result = await this.provider.postsCollection.findOneAndUpdate(
       { _id: id },

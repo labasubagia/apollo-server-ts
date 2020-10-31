@@ -150,7 +150,7 @@ describe('e2e mock server', (): void => {
         publishedAt: mockPost.publishedAt,
         author: {
           email: dummyAuthor.email,
-          firstName: dummyAuthor.firstName,
+          username: dummyAuthor.username,
         },
       };
       expect(normalize(data)).toStrictEqual({ post: expected });
