@@ -12,8 +12,8 @@ module.exports = {
     '/node_modules/',
     './src/environment.ts',
     './src/main.ts',
+    './src/generated/',
   ],
-  coverageReporters: ['json', 'lcov', 'text', 'clover', 'cobertura'],
   preset: '@shelf/jest-mongodb',
   testEnvironment: 'node',
 };
