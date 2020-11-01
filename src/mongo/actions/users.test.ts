@@ -1,10 +1,12 @@
 /* eslint-disable jest/no-hooks */
 import { ObjectID } from 'mongodb';
-import { postsDummy, usersDummy } from '../dummy';
+import { mockUserForAuth, postsDummy, usersDummy } from '../dummy';
 import MongoDbProvider from '../provider';
 import { randomIntWithLimit } from '../../utils/random';
 import { UserDbObject } from '../../generated/codegen';
 import { mongoUri } from '../../../globalConfig.json';
+import { signJwtToken } from '../../utils/auth';
+import { TokenPayload } from '../../interfaces/TokenPayload';
 
 describe('mongodb: user', () => {
   const provider = new MongoDbProvider(mongoUri, 'integration_user');
@@ -19,6 +21,31 @@ describe('mongodb: user', () => {
 
   afterEach(async () => {
     await provider.removeAllData();
+  });
+
+  describe('get user by jwtToken', () => {
+    it('should be able to get user by jwt token', async () => {
+      expect.hasAssertions();
+      const userIndex = randomIntWithLimit(usersDummy.length);
+      const dummyUser = usersDummy[userIndex];
+      const mockUser = await provider.usersAction.insertUser(dummyUser);
+      const tokenPayload: TokenPayload = {
+        id: String(mockUser?._id),
+        email: mockUser?.email as string,
+        username: mockUser?.username as string,
+      };
+      const jwtToken = signJwtToken(tokenPayload);
+      const user = await provider.usersAction.getSingleUserByJwtToken(jwtToken);
+      expect(user).toBeTruthy();
+      expect(user).toStrictEqual(mockUser);
+    });
+    it('should not be able to get user because token invalid', async () => {
+      expect.hasAssertions();
+      const user = await provider.usersAction.getSingleUserByJwtToken(
+        'INVALID_TOKEN'
+      );
+      expect(user).toBeNull();
+    });
   });
 
   describe('get single user', () => {
@@ -158,6 +185,29 @@ describe('mongodb: user', () => {
       );
       expect(mockFollowers).toStrictEqual(dummyFollowers);
       expect(mockFollowers).toHaveLength(dummyFollowers.length);
+    });
+  });
+
+  describe('mock auth', () => {
+    it('should be able to insert mock user', async () => {
+      expect.hasAssertions();
+      const user = await provider.usersAction.insertMockAuthUser();
+      expect(user).toStrictEqual(mockUserForAuth);
+    });
+
+    it('should be able to get mock user', async () => {
+      expect.hasAssertions();
+      await provider.usersAction.insertMockAuthUser();
+      const actual = await provider.usersAction.getMockAuthUser();
+      expect(actual).toStrictEqual(mockUserForAuth);
+    });
+
+    it('should be able to delete mock user', async () => {
+      expect.hasAssertions();
+      await provider.usersAction.insertMockAuthUser();
+      await provider.usersAction.deleteMockAuthUser();
+      const actual = await provider.usersAction.getMockAuthUser();
+      expect(actual).toBeNull();
     });
   });
 });

@@ -21,7 +21,7 @@ export default class UserAction {
       });
       return user;
     } catch (error) {
-      console.error(error);
+      // console.error(error);
       return null;
     }
   }
