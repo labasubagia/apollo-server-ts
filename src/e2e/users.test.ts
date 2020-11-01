@@ -166,36 +166,118 @@ describe('e2e user', (): void => {
   });
 
   describe('mutation followUser', () => {
+    const followIndex = randomIntWithLimit(usersDummy.length);
+    const followUser = usersDummy[followIndex];
+    const mutation: ClientMutation<MutationFollowUserArgs> = {
+      mutation: FOLLOW_USER,
+      variables: {
+        userId: String(followUser._id),
+      },
+    };
+
+    beforeEach(async () => {
+      await provider.usersAction.insertUser(followUser);
+    });
+
     it('[use apollo mock] should mock follower count after follow user', async () => {
       expect.hasAssertions();
-      const mutation: ClientMutation<MutationFollowUserArgs> = {
+      const mockMutation: ClientMutation<MutationFollowUserArgs> = {
         mutation: FOLLOW_USER,
         variables: {
           userId: MOCK_MONGO_USER_ID,
         },
       };
-      const { data, errors } = await mockClient.mutate(mutation);
+      const { data, errors } = await mockClient.mutate(mockMutation);
       expect(errors).toBeFalsy();
       expect(normalize(data)).toStrictEqual({ user: expectedUserFollow });
     });
 
-    // TODO: add db mock (mongo) test
+    it('[use mongo] should be able to follow user', async () => {
+      expect.hasAssertions();
+      const { data, errors } = await client.mutate(mutation);
+      const user = await provider.usersAction.getMockAuthUser();
+      const following = await provider.usersAction.getUserFollowing(
+        user as UserDbObject
+      );
+      expect(errors).toBeFalsy();
+      expect(data?.user).toBeTruthy();
+      expect(data?.user?.followingCount).toStrictEqual(1);
+      expect(user?.following).toStrictEqual([followUser._id]);
+      expect(following).toStrictEqual([followUser]);
+    });
+
+    it('[use mongo] should not be able to follow user when not authenticated', async () => {
+      expect.hasAssertions();
+      await provider.usersAction.deleteMockAuthUser();
+      const { data, errors } = await client.mutate(mutation);
+      expect(data?.user).toBeNull();
+      expect(errors).toBeTruthy();
+      expect(errors?.[0]?.message).toStrictEqual('Please login');
+    });
   });
 
   describe('mutation unFollowUser', () => {
+    const unfollowIndex = randomIntWithLimit(usersDummy.length);
+    const unfollowUser = usersDummy[unfollowIndex];
+    const followingIds = usersDummy.map(({ _id }) => _id);
+    const followingUsers = usersDummy.filter(
+      (_, index) => index !== unfollowIndex
+    );
+    const expectedIds = followingUsers.map(({ _id }) => _id);
+    const mutation: ClientMutation<MutationUnFollowUserArgs> = {
+      mutation: UNFOLLOW_USER,
+      variables: {
+        userId: String(unfollowUser._id),
+      },
+    };
+
+    beforeEach(async () => {
+      await provider.usersCollection.insertMany(usersDummy);
+      const loggedUser = await provider.usersAction.getMockAuthUser();
+      await provider.usersCollection.updateOne(
+        { _id: loggedUser?._id },
+        {
+          $set: {
+            following: followingIds,
+          },
+        }
+      );
+    });
+
     it('[use apollo mock] should mock follower count after unFollow user', async () => {
       expect.hasAssertions();
-      const mutation: ClientMutation<MutationUnFollowUserArgs> = {
+      const mockMutation: ClientMutation<MutationUnFollowUserArgs> = {
         mutation: UNFOLLOW_USER,
         variables: {
           userId: MOCK_MONGO_USER_ID,
         },
       };
-      const { data, errors } = await mockClient.mutate(mutation);
+      const { data, errors } = await mockClient.mutate(mockMutation);
       expect(errors).toBeFalsy();
       expect(normalize(data)).toStrictEqual({ user: expectedUserFollow });
     });
-  });
 
-  // TODO: add db mock (mongo) test
+    it('[use mongo] should be able to unfollow user', async () => {
+      expect.hasAssertions();
+      const { data, errors } = await client.mutate(mutation);
+      const loggedUser = await provider.usersAction.getMockAuthUser();
+      const following = await provider.usersAction.getUserFollowing(
+        loggedUser as UserDbObject
+      );
+      expect(errors).toBeFalsy();
+      expect(data?.user).toBeTruthy();
+      expect(data?.user?.followingCount).toStrictEqual(expectedIds.length);
+      expect(loggedUser?.following).toStrictEqual(expectedIds);
+      expect(following).toStrictEqual(followingUsers);
+    });
+
+    it('[use mongo] should not be able to unfollow user when not authenticated', async () => {
+      expect.hasAssertions();
+      await provider.usersAction.deleteMockAuthUser();
+      const { data, errors } = await client.mutate(mutation);
+      expect(data?.user).toBeNull();
+      expect(errors).toBeTruthy();
+      expect(errors?.[0]?.message).toStrictEqual('Please login');
+    });
+  });
 });

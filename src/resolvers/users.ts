@@ -70,28 +70,34 @@ const usersResolver = (provider: MongoDbProvider) => ({
       return signJwtToken(jwtObj);
     },
 
-    followUser: async (_: unknown, { userId }: MutationFollowUserArgs) => {
-      try {
-        return provider.usersAction.followUser({
-          followerId: MOCK_MONGO_USER_ID,
-          followingId: userId,
-        });
-      } catch (error) {
-        console.error({ error });
-        return null;
-      }
+    followUser: async (
+      _: unknown,
+      { userId }: MutationFollowUserArgs,
+      context: any
+    ) => {
+      const user = await provider.usersAction.getSingleUserByJwtToken(
+        context?.token
+      );
+      if (!user) throw new AuthenticationError('Please login');
+      return provider.usersAction.followUser({
+        followerId: MOCK_MONGO_USER_ID,
+        followingId: userId,
+      });
     },
 
-    unFollowUser: async (_: unknown, { userId }: MutationUnFollowUserArgs) => {
-      try {
-        return provider.usersAction.unFollowUser({
-          followerId: MOCK_MONGO_USER_ID,
-          followingId: userId,
-        });
-      } catch (error) {
-        console.error({ error });
-        return null;
-      }
+    unFollowUser: async (
+      _: unknown,
+      { userId }: MutationUnFollowUserArgs,
+      context: any
+    ) => {
+      const user = await provider.usersAction.getSingleUserByJwtToken(
+        context?.token
+      );
+      if (!user) throw new AuthenticationError('Please login');
+      return provider.usersAction.unFollowUser({
+        followerId: MOCK_MONGO_USER_ID,
+        followingId: userId,
+      });
     },
   },
 
