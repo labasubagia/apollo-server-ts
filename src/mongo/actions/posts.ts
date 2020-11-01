@@ -2,7 +2,7 @@ import { ObjectId, ObjectID } from 'mongodb';
 import { PostDbObject, UserDbObject } from '../../generated/codegen';
 import { PAGINATION_SORT_ASC } from '../../const/pagination';
 import { PaginationParams } from '../../interfaces/PaginationParams';
-import { MongoDbProvider } from '../provider';
+import MongoDbProvider from '../provider';
 import { getPaginationSkip } from '../../utils/pagination';
 
 export default class PostAction {
@@ -61,7 +61,10 @@ export default class PostAction {
       _id: id,
     })) as PostDbObject;
 
-    const likes: ObjectID[] = [...(post?.likedBy || []), likerId] as ObjectID[];
+    const likes = [
+      ...(post?.likedBy || []).filter((item) => !item?.equals(likerId)),
+      likerId,
+    ] as ObjectID[];
 
     const result = await this.provider.postsCollection.findOneAndUpdate(
       { _id: id },

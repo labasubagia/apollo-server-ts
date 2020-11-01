@@ -3,7 +3,7 @@ import {
   EmailAddressResolver,
   UnsignedIntResolver,
 } from 'graphql-scalars';
-import { MongoDbProvider } from '../mongo/provider';
+import MongoDbProvider from '../mongo/provider';
 import postsResolver from './posts';
 import usersResolver from './users';
 

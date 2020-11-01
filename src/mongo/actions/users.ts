@@ -2,7 +2,7 @@ import { ObjectID } from 'mongodb';
 import { PostDbObject, User, UserDbObject } from '../../generated/codegen';
 import { verifyJwtToken } from '../../utils/auth';
 import { mockUserForAuth } from '../dummy';
-import { MongoDbProvider } from '../provider';
+import MongoDbProvider from '../provider';
 
 export default class UserAction {
   private provider: MongoDbProvider;

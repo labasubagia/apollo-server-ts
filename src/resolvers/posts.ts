@@ -8,7 +8,7 @@ import {
   QueryGetPostArgs,
   QueryGetPostsArgs,
 } from '../generated/codegen';
-import { MongoDbProvider } from '../mongo/provider';
+import MongoDbProvider from '../mongo/provider';
 
 const postsResolver = (provider: MongoDbProvider) => ({
   Query: {

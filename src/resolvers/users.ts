@@ -11,7 +11,7 @@ import {
   UserDbObject,
 } from '../generated/codegen';
 import { TokenPayload } from '../interfaces/TokenPayload';
-import { MongoDbProvider } from '../mongo/provider';
+import MongoDbProvider from '../mongo/provider';
 import { signJwtToken } from '../utils/auth';
 
 const usersResolver = (provider: MongoDbProvider) => ({
