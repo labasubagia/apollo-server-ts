@@ -5,7 +5,7 @@ import { ClientMutation } from '../interfaces/ClientMutation';
 import { ClientQuery } from '../interfaces/ClientQuery';
 import { normalize } from '../utils/graphql';
 import { setupDefaultClient, setupMockClient } from './utils/setup-client';
-import { mongoDbMockProvider, MongoDbProvider } from '../mongo/provider';
+import MongoDbProvider from '../mongo/provider';
 import {
   MutationLikePostArgs,
   MutationPublishPostArgs,
@@ -32,16 +32,17 @@ import {
 } from '../const/pagination';
 import { PaginationParams } from '../interfaces/PaginationParams';
 import { getTotalPage } from '../utils/pagination';
+import { mongoUri } from '../../globalConfig.json';
 
 describe('e2e post', (): void => {
-  const provider: MongoDbProvider = mongoDbMockProvider;
+  const provider = new MongoDbProvider(mongoUri, 'e2e_post');
   let mockClient: ApolloServerTestClient;
   let client: ApolloServerTestClient;
 
   beforeAll(async () => {
     await provider.connectAsync();
-    mockClient = setupMockClient(provider);
     client = setupDefaultClient(provider);
+    mockClient = setupMockClient();
   });
 
   afterAll(async () => {

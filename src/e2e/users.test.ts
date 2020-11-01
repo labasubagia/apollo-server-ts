@@ -9,7 +9,7 @@ import {
   REGISTER_USER,
   UNFOLLOW_USER,
 } from './queries/users';
-import { mongoDbMockProvider, MongoDbProvider } from '../mongo/provider';
+import MongoDbProvider from '../mongo/provider';
 import {
   MutationFollowUserArgs,
   MutationLoginArgs,
@@ -23,16 +23,17 @@ import { expectedUserFollow } from './utils/mock-data';
 import { usersDummy } from '../mongo/dummy';
 import { randomIntWithLimit } from '../utils/random';
 import { verifyJwtToken } from '../utils/auth';
+import { mongoUri } from '../../globalConfig.json';
 
 describe('e2e user', (): void => {
-  const provider: MongoDbProvider = mongoDbMockProvider;
+  const provider = new MongoDbProvider(mongoUri, 'e2e_user');
   let mockClient: ApolloServerTestClient;
   let client: ApolloServerTestClient;
 
   beforeAll(async () => {
     await provider.connectAsync();
-    mockClient = setupMockClient(provider);
     client = setupDefaultClient(provider);
+    mockClient = setupMockClient();
   });
 
   afterAll(async () => {

@@ -12,7 +12,7 @@
     "start:ts": "ts-node src/main",
     "start": "node dist/server",
     "watch": "nodemon dist/server",
-    "test": "jest --runInBand"
+    "test": "jest"
   },
   "keywords": [],
   "author": "",

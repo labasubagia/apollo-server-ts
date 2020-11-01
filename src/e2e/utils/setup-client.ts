@@ -1,18 +1,13 @@
 import { DIRECTIVES } from '@graphql-codegen/typescript-mongodb';
 import { ApolloServer } from 'apollo-server';
-import {
-  ApolloServerTestClient,
-  createTestClient,
-} from 'apollo-server-testing';
+import { createTestClient } from 'apollo-server-testing';
 import resolvers from '../../resolvers';
 import typeDefs from '../../type-defs';
 import mocks from '../../mocks';
-import { MongoDbProvider } from '../../mongo/provider';
+import MongoDbProvider from '../../mongo/provider';
 import { loginMockUserForAuth } from '../../mongo/dummy';
 
-export const setupDefaultClient = (
-  provider: MongoDbProvider
-): ApolloServerTestClient =>
+export const setupDefaultClient = (provider: MongoDbProvider) =>
   createTestClient(
     new ApolloServer({
       typeDefs: [DIRECTIVES, typeDefs],
@@ -38,13 +33,10 @@ export const setupDefaultClient = (
     })
   );
 
-export const setupMockClient = (
-  provider: MongoDbProvider
-): ApolloServerTestClient =>
+export const setupMockClient = () =>
   createTestClient(
     new ApolloServer({
       typeDefs: [DIRECTIVES, typeDefs],
-      resolvers: resolvers(provider),
       mocks,
       mockEntireSchema: true,
     })

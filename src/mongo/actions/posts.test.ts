@@ -2,12 +2,13 @@
 import { ObjectID } from 'mongodb';
 import { postsDummy, usersDummy } from '../dummy';
 import { PAGINATION_SORT_ASC } from '../../const/pagination';
-import { mongoDbMockProvider, MongoDbProvider } from '../provider';
+import MongoDbProvider from '../provider';
 import { PostDbObject } from '../../generated/codegen';
 import { randomIntWithLimit } from '../../utils/random';
+import { mongoUri } from '../../../globalConfig.json';
 
-describe('mongodb: posts', () => {
-  const provider: MongoDbProvider = mongoDbMockProvider;
+describe('mongodb: post', () => {
+  const provider = new MongoDbProvider(mongoUri, 'integration_post');
 
   beforeAll(async () => {
     await provider.connectAsync();

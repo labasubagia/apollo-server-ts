@@ -1,12 +1,13 @@
 /* eslint-disable jest/no-hooks */
 import { ObjectID } from 'mongodb';
 import { postsDummy, usersDummy } from '../dummy';
-import { mongoDbMockProvider, MongoDbProvider } from '../provider';
+import MongoDbProvider from '../provider';
 import { randomIntWithLimit } from '../../utils/random';
 import { UserDbObject } from '../../generated/codegen';
+import { mongoUri } from '../../../globalConfig.json';
 
-describe('mongodb: posts', () => {
-  const provider: MongoDbProvider = mongoDbMockProvider;
+describe('mongodb: user', () => {
+  const provider = new MongoDbProvider(mongoUri, 'integration_user');
 
   beforeAll(async () => {
     await provider.connectAsync();

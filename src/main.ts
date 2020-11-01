@@ -3,10 +3,13 @@ import { DIRECTIVES } from '@graphql-codegen/typescript-mongodb';
 import environment from './environment';
 import resolvers from './resolvers';
 import typeDefs from './type-defs';
-import { MongoDbProvider, mongoDbProvider } from './mongo/provider';
+import MongoDbProvider from './mongo/provider';
 
 (async function bootstrapAsync(): Promise<void> {
-  const provider: MongoDbProvider = mongoDbProvider;
+  const provider = new MongoDbProvider(
+    environment.mongodb.url,
+    environment.mongodb.dbName
+  );
   await provider.connectAsync();
 
   const server = new ApolloServer({

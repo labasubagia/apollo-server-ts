@@ -1,10 +1,8 @@
 import { Collection, Db, MongoClient } from 'mongodb';
-import { mongoUri, mongoDBName } from '../../globalConfig.json';
-import environment from '../environment';
 import PostAction from './actions/posts';
 import UserAction from './actions/users';
 
-export class MongoDbProvider {
+export default class MongoDbProvider {
   private database?: Db;
 
   private databaseName: string;
@@ -55,10 +53,3 @@ export class MongoDbProvider {
     return this.database.collection<T>(collectionName);
   }
 }
-
-export const mongoDbProvider = new MongoDbProvider(
-  environment.mongodb.url,
-  environment.mongodb.dbName
-);
-
-export const mongoDbMockProvider = new MongoDbProvider(mongoUri, mongoDBName);
