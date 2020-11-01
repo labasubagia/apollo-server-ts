@@ -18,7 +18,8 @@ import MongoDbProvider from './mongo/provider';
     context: async ({ req }) => {
       const authHeader = req.headers.authorization || 'Bearer ';
       const token = authHeader.split(' ')[1];
-      return { req, token };
+      const user = await provider.usersAction.getSingleUserByJwtToken(token);
+      return { req, token, user };
     },
     introspection: environment.apollo.introspection,
     playground: environment.apollo.playground,

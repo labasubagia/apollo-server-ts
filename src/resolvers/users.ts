@@ -1,7 +1,6 @@
 import { AuthenticationError, ValidationError } from 'apollo-server';
 import bcrypt from 'bcrypt';
 import { ObjectID } from 'mongodb';
-import { MOCK_MONGO_USER_ID } from '../const/mocks';
 import {
   MutationFollowUserArgs,
   MutationLoginArgs,
@@ -73,14 +72,11 @@ const usersResolver = (provider: MongoDbProvider) => ({
     followUser: async (
       _: unknown,
       { userId }: MutationFollowUserArgs,
-      context: any
+      { user }: { user: UserDbObject }
     ) => {
-      const user = await provider.usersAction.getSingleUserByJwtToken(
-        context?.token
-      );
       if (!user) throw new AuthenticationError('Please login');
       return provider.usersAction.followUser({
-        followerId: MOCK_MONGO_USER_ID,
+        followerId: String(user?._id),
         followingId: userId,
       });
     },
@@ -88,14 +84,11 @@ const usersResolver = (provider: MongoDbProvider) => ({
     unFollowUser: async (
       _: unknown,
       { userId }: MutationUnFollowUserArgs,
-      context: any
+      { user }: { user: UserDbObject }
     ) => {
-      const user = await provider.usersAction.getSingleUserByJwtToken(
-        context?.token
-      );
       if (!user) throw new AuthenticationError('Please login');
       return provider.usersAction.unFollowUser({
-        followerId: MOCK_MONGO_USER_ID,
+        followerId: String(user?._id),
         followingId: userId,
       });
     },

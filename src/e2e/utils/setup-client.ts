@@ -12,7 +12,7 @@ export const setupDefaultClient = (provider: MongoDbProvider) =>
     new ApolloServer({
       typeDefs: [DIRECTIVES, typeDefs],
       resolvers: resolvers(provider),
-      context: ({ req }) => {
+      context: async ({ req }) => {
         /*
         ! NOTE: insert the auth user in beforeEach
         ! Reason: to make sure owner of token exist
@@ -28,7 +28,8 @@ export const setupDefaultClient = (provider: MongoDbProvider) =>
         * Hope for better way
         */
         const token = loginMockUserForAuth();
-        return { req, token };
+        const user = await provider.usersAction.getSingleUserByJwtToken(token);
+        return { req, token, user };
       },
     })
   );

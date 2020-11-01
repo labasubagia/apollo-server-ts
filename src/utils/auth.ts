@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import environment from '../environment';
 
-export const signJwtToken = (obj: object): string => {
+export const signJwtToken = <T>(payload: T): string => {
+  const obj = (payload as unknown) as object;
   return jwt.sign(obj, environment.jwt.secretKey, { expiresIn: '1h' });
 };
 

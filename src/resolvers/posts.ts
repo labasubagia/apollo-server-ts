@@ -7,6 +7,7 @@ import {
   PostDbObject,
   QueryGetPostArgs,
   QueryGetPostsArgs,
+  UserDbObject,
 } from '../generated/codegen';
 import MongoDbProvider from '../mongo/provider';
 
@@ -33,11 +34,8 @@ const postsResolver = (provider: MongoDbProvider) => ({
     publishPost: async (
       _: unknown,
       { input: { title, content } }: MutationPublishPostArgs,
-      context: any
+      { user }: { user: UserDbObject }
     ): Promise<PostDbObject | null> => {
-      const user = await provider.usersAction.getSingleUserByJwtToken(
-        context?.token
-      );
       if (!user) throw new AuthenticationError('Please login');
       const payload: PostDbObject = {
         title,
@@ -51,11 +49,8 @@ const postsResolver = (provider: MongoDbProvider) => ({
     likePost: async (
       _: unknown,
       { postId }: MutationLikePostArgs,
-      context: any
+      { user }: { user: UserDbObject }
     ): Promise<PostDbObject | null> => {
-      const user = await provider.usersAction.getSingleUserByJwtToken(
-        context?.token
-      );
       if (!user) throw new AuthenticationError('Please login');
       return provider.postsAction.likePost({
         userId: String(user?._id),
