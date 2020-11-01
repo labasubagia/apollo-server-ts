@@ -53,19 +53,14 @@ const postsResolver = (provider: MongoDbProvider) => ({
       { postId }: MutationLikePostArgs,
       context: any
     ): Promise<PostDbObject | null> => {
-      try {
-        const user = await provider.usersAction.getSingleUserByJwtToken(
-          context?.token
-        );
-        if (!user) throw new AuthenticationError('Please login');
-        return provider.postsAction.likePost({
-          userId: String(user?._id),
-          postId,
-        });
-      } catch (error) {
-        console.error({ error });
-        return null;
-      }
+      const user = await provider.usersAction.getSingleUserByJwtToken(
+        context?.token
+      );
+      if (!user) throw new AuthenticationError('Please login');
+      return provider.postsAction.likePost({
+        userId: String(user?._id),
+        postId,
+      });
     },
   },
 

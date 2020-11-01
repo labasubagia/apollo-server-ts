@@ -22,7 +22,7 @@ describe('mongodb: post', () => {
     await provider.removeAllData();
   });
 
-  describe('create post', () => {
+  describe('create', () => {
     it('should publish post', async (): Promise<void> => {
       expect.hasAssertions();
       await provider.usersCollection.insertMany(usersDummy);
@@ -91,65 +91,63 @@ describe('mongodb: post', () => {
       expect(postAfterLike?.likedBy).toStrictEqual([usersDummy[userIndex]._id]);
     });
 
-    it('should be able to unlike post', async () => {
-      expect.hasAssertions();
-      const postIndex = randomIntWithLimit(postsDummy.length);
-      const userIndex = randomIntWithLimit(usersDummy.length);
-      await provider.usersCollection.insertMany(usersDummy);
-      const post = await provider.postsAction.insertPost({
-        ...postsDummy[postIndex],
-        likedBy: usersDummy.map(({ _id }) => _id),
-      });
-      const postAfterLike = await provider.postsAction.unLikePost({
-        userId: String(usersDummy[userIndex]._id),
-        postId: String(post?._id),
-      });
-      const expected = usersDummy
-        .filter((_, index) => index !== userIndex)
-        .map((user) => user._id);
-      expect(postAfterLike?.likedBy).toStrictEqual(expected);
-    });
-
     it('should be able to find user who like the post', async () => {
       expect.hasAssertions();
       await provider.usersCollection.insertMany(usersDummy);
       const postIndex = randomIntWithLimit(postsDummy.length);
+      const dummyPost = postsDummy[postIndex];
+      const users = usersDummy.slice(randomIntWithLimit(usersDummy.length));
+      const likedBy = users.map(({ _id }) => _id);
       const post = (await provider.postsAction.insertPost({
-        ...postsDummy[postIndex],
-        likedBy: [],
+        ...dummyPost,
+        likedBy,
       })) as PostDbObject;
-
-      const users = usersDummy
-        .slice(randomIntWithLimit(usersDummy.length))
-        .filter(
-          (user) => !(user._id as ObjectID).equals(post?.author as ObjectID)
-        );
-      const userIds = users.map(({ _id }) => _id);
-
-      const likeActions = await Promise.all(
-        users.map((user) =>
-          provider.postsAction.likePost({
-            userId: String(user._id),
-            postId: String(post._id),
-          })
-        )
-      );
-      const postAfterLike = likeActions.reduce((prev, current) => {
-        return {
-          ...((prev as PostDbObject) || {}),
-          likedBy: [
-            ...((prev as PostDbObject).likedBy || []),
-            ...((current as PostDbObject).likedBy || []),
-          ],
-        };
-      }, post) as PostDbObject;
-      const likeUsers = await provider.postsAction.findLikeUsers(postAfterLike);
-      expect(postAfterLike.likedBy).toStrictEqual(userIds);
+      const likeUsers = await provider.postsAction.findLikeUsers(post);
+      expect(post?.likedBy).toStrictEqual(likedBy);
       expect(likeUsers).toStrictEqual(users);
     });
   });
 
-  describe('post author', () => {
+  describe('unlike', () => {
+    it('should be able to unlike post', async () => {
+      expect.hasAssertions();
+      const userIndex = randomIntWithLimit(usersDummy.length);
+      const postIndex = randomIntWithLimit(postsDummy.length);
+      await provider.usersCollection.insertMany(usersDummy);
+      const post = await provider.postsAction.insertPost({
+        ...postsDummy[postIndex],
+        likedBy: [usersDummy[userIndex]._id],
+      });
+      const postAfterUnLike = await provider.postsAction.unLikePost({
+        userId: String(usersDummy[userIndex]._id),
+        postId: String(post?._id),
+      });
+      expect(postAfterUnLike?.likedBy).toStrictEqual([]);
+    });
+
+    it('should be able to unlike post from some other user likes', async () => {
+      expect.hasAssertions();
+      const postIndex = randomIntWithLimit(postsDummy.length);
+      const userIndex = randomIntWithLimit(usersDummy.length);
+      const likedBy = usersDummy.map(({ _id }) => _id);
+      const unlikeUser = usersDummy[userIndex];
+      await provider.usersCollection.insertMany(usersDummy);
+      const post = await provider.postsAction.insertPost({
+        ...postsDummy[postIndex],
+        likedBy,
+      });
+      const postAfterUnLike = await provider.postsAction.unLikePost({
+        userId: String(usersDummy[userIndex]._id),
+        postId: String(post?._id),
+      });
+      const expected = likedBy.filter(
+        (id) => !id?.equals(unlikeUser._id as ObjectID)
+      );
+      expect(postAfterUnLike?.likedBy).toStrictEqual(expected);
+    });
+  });
+
+  describe('author', () => {
     it('should be able to find author of a post', async () => {
       expect.hasAssertions();
       await provider.usersCollection.insertMany(usersDummy);

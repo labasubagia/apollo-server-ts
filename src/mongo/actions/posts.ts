@@ -60,6 +60,7 @@ export default class PostAction {
     const post = (await this.provider.postsCollection.findOne({
       _id: id,
     })) as PostDbObject;
+    if (!post) throw new Error('Post not found');
 
     const likes = [
       ...(post?.likedBy || []).filter((item) => !item?.equals(likerId)),

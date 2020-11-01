@@ -1,9 +1,8 @@
 /* eslint-disable jest/no-hooks */
 import { ApolloServerTestClient } from 'apollo-server-testing';
-import { ObjectID } from 'mongodb';
+import { ObjectId, ObjectID } from 'mongodb';
 import { ClientMutation } from '../interfaces/ClientMutation';
 import { ClientQuery } from '../interfaces/ClientQuery';
-import { normalize } from '../utils/graphql';
 import { setupDefaultClient, setupMockClient } from './utils/setup-client';
 import MongoDbProvider from '../mongo/provider';
 import {
@@ -33,6 +32,7 @@ import {
 import { PaginationParams } from '../interfaces/PaginationParams';
 import { getTotalPage } from '../utils/pagination';
 import { mongoUri } from '../../globalConfig.json';
+import { normalize } from '../utils/graphql';
 
 describe('e2e post', (): void => {
   const provider = new MongoDbProvider(mongoUri, 'e2e_post');
@@ -65,13 +65,16 @@ describe('e2e post', (): void => {
         query: QUERY_GET_PAGINATE_POST,
         variables: { first: PAGINATION_DEFAULT_SIZE },
       };
-      const { data } = await mockClient.query(query);
+      const { data, errors } = await mockClient.query(query);
       const expected = [...Array(PAGINATION_DEFAULT_SIZE)].map(() => ({
         title: expectedPost?.content,
         content: expectedPost?.content,
         publishedAt: expectedPost?.publishedAt,
       }));
-      expect(normalize(data)).toStrictEqual({ posts: expected });
+      expect(errors).toBeFalsy();
+      expect(data?.posts).toBeTruthy();
+      expect(data?.posts).toHaveLength(PAGINATION_DEFAULT_SIZE);
+      expect(normalize(data)?.posts).toStrictEqual(expected);
     });
 
     it('[use mongo] should be able to get posts', async () => {
@@ -105,8 +108,11 @@ describe('e2e post', (): void => {
             content,
             publishedAt,
           }));
-          const { data } = await client.query(query);
-          expect(normalize(data)).toStrictEqual({ posts });
+          const { data, errors } = await client.query(query);
+          expect(errors).toBeFalsy();
+          expect(data?.posts).toBeTruthy();
+          expect(data?.posts).toHaveLength(posts.length);
+          expect(normalize(data)?.posts).toStrictEqual(posts);
         })
       );
     });
@@ -121,8 +127,10 @@ describe('e2e post', (): void => {
           id: MOCK_MONGO_POST_ID,
         },
       };
-      const { data } = await mockClient.query(query);
-      expect(normalize(data)).toStrictEqual({ post: expectedPost });
+      const { data, errors } = await mockClient.query(query);
+      expect(errors).toBeFalsy();
+      expect(data?.post).toBeTruthy();
+      expect(normalize(data)?.post).toStrictEqual(expectedPost);
     });
 
     it('[use mongo] should be able get post', async () => {
@@ -144,7 +152,7 @@ describe('e2e post', (): void => {
           id: String(mockPost._id),
         },
       };
-      const { data } = await client.query(query);
+      const { data, errors } = await client.query(query);
 
       const expected: Post = {
         title: mockPost.title,
@@ -155,7 +163,23 @@ describe('e2e post', (): void => {
           username: dummyAuthor.username,
         },
       };
-      expect(normalize(data)).toStrictEqual({ post: expected });
+      expect(errors).toBeFalsy();
+      expect(data?.post).toBeTruthy();
+      expect(normalize(data)?.post).toStrictEqual(expected);
+    });
+
+    it('[use mongo] should not be able to get post when post not found', async () => {
+      expect.hasAssertions();
+      const query: ClientQuery<QueryGetPostArgs> = {
+        query: QUERY_GET_POST,
+        variables: {
+          id: String(new ObjectId()),
+        },
+      };
+      const { data, errors } = await client.query(query);
+      expect(data?.post).toBeFalsy();
+      expect(data?.post).toBeNull();
+      expect(errors).toBeFalsy();
     });
   });
 
@@ -183,49 +207,105 @@ describe('e2e post', (): void => {
           },
         },
       };
-      const { data } = await mockClient.mutate(mockMutation);
-      const expected = {
+      const { data, errors } = await mockClient.mutate(mockMutation);
+      const expected: Post = {
         title: expectedPost.title,
         content: expectedPost.content,
       };
-      expect(normalize(data)).toStrictEqual({ post: expected });
+      expect(errors).toBeFalsy();
+      expect(data?.post).toBeTruthy();
+      expect(normalize(data)?.post).toStrictEqual(expected);
     });
 
     it('[use mongo] should be able to publish a post', async () => {
       expect.hasAssertions();
-      const { data } = await client.mutate(mutation);
+      const { data, errors } = await client.mutate(mutation);
       const expected: Post = {
         title: dummyPost?.title,
         content: dummyPost?.content,
       };
-      expect(normalize(data)).toStrictEqual({ post: expected });
+      expect(errors).toBeFalsy();
+      expect(data?.post).toBeTruthy();
+      expect(normalize(data)?.post).toStrictEqual(expected);
     });
 
     it('[use mongo] should not be able to publish post because user not found', async () => {
       expect.hasAssertions();
       await provider.usersAction.deleteMockAuthUser();
       const { data, errors } = await client.mutate(mutation);
-      expect(errors).toBeTruthy();
       expect(data?.post).toBeFalsy();
+      expect(errors).toBeTruthy();
       expect(errors?.[0]?.message).toStrictEqual('Please login');
     });
   });
 
   describe('mutation: likePost', () => {
-    it('should mock likePost amount', async (): Promise<void> => {
+    const index = randomIntWithLimit(postsDummy.length);
+    const dummyPost = postsDummy[index];
+    const dummyAuthor = usersDummy.find(({ _id }) =>
+      _id?.equals(dummyPost?.author as ObjectID)
+    ) as UserDbObject;
+    let mockPost: PostDbObject;
+    let mutation: ClientMutation<MutationLikePostArgs>;
+
+    beforeEach(async () => {
+      await provider.usersAction.insertUser(dummyAuthor);
+      mockPost = (await provider.postsAction.insertPost(
+        dummyPost
+      )) as PostDbObject;
+      mutation = {
+        mutation: MUTATION_LIKE_POST,
+        variables: {
+          postId: String(mockPost?._id),
+        },
+      };
+    });
+
+    it('[use apollo mock] should mock likePost amount', async () => {
       expect.hasAssertions();
-      const mutation: ClientMutation<MutationLikePostArgs> = {
+      const mutationMock: ClientMutation<MutationLikePostArgs> = {
         mutation: MUTATION_LIKE_POST,
         variables: {
           postId: MOCK_MONGO_POST_ID,
         },
       };
-      const { data } = await mockClient.mutate(mutation);
-      expect(normalize(data)).toStrictEqual({
-        post: {
-          likeCount: MOCK_GRAPHQL_UNSIGNED_INT,
-        },
-      });
+      const { data, errors } = await mockClient.mutate(mutationMock);
+      expect(errors).toBeFalsy();
+      expect(data?.post).toBeTruthy();
+      expect(data?.post.likeCount).toStrictEqual(MOCK_GRAPHQL_UNSIGNED_INT);
+    });
+
+    it('[use mongo] should be able to like post', async () => {
+      expect.hasAssertions();
+
+      const { data, errors } = await client.mutate(mutation);
+      const postAfterLiked = await provider.postsAction.getSinglePost(
+        String(mockPost._id)
+      );
+      const loggedInUser = await provider.usersAction.getMockAuthUser();
+
+      expect(errors).toBeFalsy();
+      expect(data?.post).toBeTruthy();
+      expect(data?.post?.likeCount).toStrictEqual(1);
+      expect(postAfterLiked?.likedBy).toStrictEqual([loggedInUser?._id]);
+    });
+
+    it('[use mongo] should not be able like post when user not logged in', async () => {
+      expect.hasAssertions();
+      await provider.usersAction.deleteMockAuthUser();
+      const { data, errors } = await client.mutate(mutation);
+      expect(data?.post).toBeFalsy();
+      expect(errors).toBeTruthy();
+      expect(errors?.[0]?.message).toStrictEqual('Please login');
+    });
+
+    it('[use mongo] should not be able to like post when post not exist', async () => {
+      expect.hasAssertions();
+      await provider.postsCollection.deleteOne({ _id: mockPost?._id });
+      const { data, errors } = await client.mutate(mutation);
+      expect(data?.post).toBeFalsy();
+      expect(errors).toBeTruthy();
+      expect(errors?.[0]?.message).toStrictEqual('Post not found');
     });
   });
 });
